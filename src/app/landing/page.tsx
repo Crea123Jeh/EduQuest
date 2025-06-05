@@ -12,14 +12,28 @@ function LandingAnimationContent() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const redirectPath = searchParams.get('redirect');
-      // Basic validation for redirectPath (starts with / and is not just /)
-      // More robust validation might be needed depending on requirements.
-      if (redirectPath && redirectPath.startsWith('/') && redirectPath.length > 1) {
-        router.push(redirectPath);
-      } else {
-        router.push('/dashboard'); // Default to dashboard if no valid redirect or just going to /landing
+      let finalRedirectPath = searchParams.get('redirect');
+      
+      // Basic validation and default for redirectPath
+      if (!finalRedirectPath || !finalRedirectPath.startsWith('/') || finalRedirectPath.length <= 1) {
+        finalRedirectPath = '/dashboard'; // Default to dashboard
       }
+
+      // Ensure finalRedirectPath doesn't already include splashCompleted from a malformed redirect
+      // Use a try-catch for URL parsing as finalRedirectPath might be invalid
+      let urlToPush: string;
+      try {
+        const url = new URL(finalRedirectPath, window.location.origin);
+        url.searchParams.delete('splashCompleted'); // Remove if exists, to prevent duplication
+        url.searchParams.append('splashCompleted', 'true');
+        urlToPush = url.pathname + url.search;
+      } catch (e) {
+        // If finalRedirectPath is not a valid relative URL, fall back to a safe default
+        console.warn("Invalid redirect path, defaulting to /dashboard with splashCompleted:", finalRedirectPath);
+        urlToPush = '/dashboard?splashCompleted=true';
+      }
+      
+      router.push(urlToPush);
     }, 2000); // 2 seconds total for splash screen
 
     return () => clearTimeout(timer); // Cleanup timer on component unmount
@@ -58,8 +72,9 @@ function LandingAnimationContent() {
 
 export default function LandingAnimationPage() {
   // Wrap with Suspense because useSearchParams() needs it for static rendering
+  // or when used in a component that might be part of a statically rendered tree.
   return (
-    <Suspense fallback={<div>Loading...</div>}> 
+    <Suspense fallback={null}> 
       <LandingAnimationContent />
     </Suspense>
   );
