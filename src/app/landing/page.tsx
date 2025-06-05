@@ -2,19 +2,28 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Logo } from '@/components/Logo';
+import { Suspense } from 'react';
 
-export default function LandingAnimationPage() {
+function LandingAnimationContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push('/'); // Redirect to the main home page (src/app/page.tsx)
+      const redirectPath = searchParams.get('redirect');
+      // Basic validation for redirectPath (starts with / and is not just /)
+      // More robust validation might be needed depending on requirements.
+      if (redirectPath && redirectPath.startsWith('/') && redirectPath.length > 1) {
+        router.push(redirectPath);
+      } else {
+        router.push('/dashboard'); // Default to dashboard if no valid redirect or just going to /landing
+      }
     }, 2000); // 2 seconds total for splash screen
 
     return () => clearTimeout(timer); // Cleanup timer on component unmount
-  }, [router]);
+  }, [router, searchParams]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
@@ -43,5 +52,15 @@ export default function LandingAnimationPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+
+export default function LandingAnimationPage() {
+  // Wrap with Suspense because useSearchParams() needs it for static rendering
+  return (
+    <Suspense fallback={<div>Loading...</div>}> 
+      <LandingAnimationContent />
+    </Suspense>
   );
 }
