@@ -149,7 +149,7 @@ export default function SettingsPage() {
              <Separator />
              <div>
                 <Label htmlFor="language">Language</Label>
-                <Select value={settings.language} onValueChange={(val) => handleSettingChange('language', val)}>
+                <Select value={settings.language} onValueChange={(val) => handleSettingChange('language', val as string)}>
                   <SelectTrigger id="language" className="mt-1">
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
