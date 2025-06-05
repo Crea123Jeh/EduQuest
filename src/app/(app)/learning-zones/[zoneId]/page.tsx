@@ -1,46 +1,119 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { LearningZone, Quest } from '@/types';
-import { ArrowLeft, Users, Puzzle, Star, Zap } from 'lucide-react';
+import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages } from 'lucide-react';
 import { History, Calculator, FlaskConical } from 'lucide-react'; // Example icons
 
 // Mock Data - In a real app, this would be fetched based on params.zoneId
 const MOCK_ZONES: Record<string, LearningZone> = {
   history: { 
-    id: 'history', name: 'History Zone: Echoes of Borobudur', 
-    description: 'Immerse yourself in the rich history and culture surrounding the magnificent Borobudur temple. Solve chronological puzzles, decipher ancient scripts, and collaborate to unveil the secrets of past civilizations.', 
+    id: 'history', name: 'History Zone: Time Travelers\' Guild HQ', 
+    description: 'Welcome, Time Agent! Your mission, should you choose to accept it, involves navigating pivotal moments in history. From decoding ancient scrolls in Egypt to strategizing D-Day landings, your choices will shape the past (or at least your grade!). Watch out for temporal paradoxes!', 
     icon: History, subject: 'History', 
     image: 'https://placehold.co/1200x400.png', 
-    aiHint: 'borobudur temple 3d',
+    aiHint: 'ancient library time portal',
     quests: [
-      { id: 'h_q1', title: 'The King\'s Decree', description: 'Decipher the royal decree to understand trade routes.', zoneId: 'history', type: 'Individual', difficulty: 'Medium', points: 120 },
-      { id: 'h_q2', title: 'Collaboration Door: Temple Builders', description: 'Work with a partner to reconstruct a temple blueprint.', zoneId: 'history', type: 'Collaborative', difficulty: 'Medium', points: 180 },
-      { id: 'h_q3', title: 'Ethical Dilemma: The Artifact', description: 'Decide the fate of a newly discovered artifact.', zoneId: 'history', type: 'Ethical Dilemma', difficulty: 'Hard', points: 100 },
+      { id: 'h_q1', title: 'The Pharaoh\'s Lost Scepter', description: 'Navigate booby-trapped pyramids and decipher hieroglyphs to find the legendary scepter before rival explorers!', zoneId: 'history', type: 'Individual', difficulty: 'Medium', points: 120 },
+      { id: 'h_q2', title: 'Collaboration Door: Silk Road Caravan Masters', description: 'Team up to manage a perilous Silk Road journey. One navigates, the other trades. Success means riches, failure... bandits!', zoneId: 'history', type: 'Collaborative', difficulty: 'Medium', points: 180 },
+      { id: 'h_q3', title: 'Ethical Dilemma: The Revolutionary\'s Choice', description: 'You\'ve uncovered a plot that could change a nation. Expose it and risk chaos, or stay silent and maintain order? The fate of many rests on your decision.', zoneId: 'history', type: 'Ethical Dilemma', difficulty: 'Hard', points: 100 },
     ]
   },
   math: { 
-    id: 'math', name: 'Mathematics Realm: The Geometry Gauntlet', 
-    description: 'Navigate a futuristic landscape filled with geometric puzzles and logical challenges. Apply theorems, calculate trajectories, and collaborate to unlock the secrets of space-time.', 
+    id: 'math', name: 'Mathematics Realm: The Number Ninjas\' Citadel', 
+    description: 'Master the art of calculation and logic in this high-tech dojo. Solve cryptic numerical puzzles, duel with equation-wielding robots, and prove your worth as a true Number Ninja. Only the sharpest minds will prevail!', 
     icon: Calculator, subject: 'Mathematics', 
     image: 'https://placehold.co/1200x400.png', 
-    aiHint: 'futuristic geometry 3d',
+    aiHint: 'futuristic dojo numbers',
     quests: [
-      { id: 'm_q1', title: 'Fractal Frontiers', description: 'Explore the infinite beauty of fractals.', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
-      { id: 'm_q2', title: 'Broken Bridge: Equation Rescue', description: 'Sacrifice points or work together to repair the equation bridge.', zoneId: 'math', type: 'Collaborative', difficulty: 'Medium', points: 150 },
+      { id: 'm_q1', title: 'Fractal Fortress Defense', description: 'Design and deploy fractal patterns to defend the Citadel from rogue data streams. The more complex, the stronger your shield!', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
+      { id: 'm_q2', title: 'Broken Bridge: The Algorithm Assembly', description: 'Work together to repair a vital data bridge by correctly assembling algorithmic components. One wrong piece could corrupt the entire network!', zoneId: 'math', type: 'Collaborative', difficulty: 'Medium', points: 150 },
+      { id: 'm_q3', title: 'The Infinite Labyrinth of Pi', description: 'Navigate a maze where each turn is decided by a digit of Pi. How far can you go before getting lost in infinity?', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 170 },
     ]
   },
    science: { 
-    id: 'science', name: 'Science Lab: Tropical Ecosystem Challenge', 
-    description: 'Simulate a lush tropical rainforest, identify species, balance ecosystems, and tackle environmental challenges. Understand food webs, biodiversity, and the impact of human activity.', 
+    id: 'science', name: 'Science Lab: The Mad Scientist\'s Playground', 
+    description: 'Don your lab coat and goggles! Here, you\'ll concoct explosive potions (safely!), build bizarre contraptions, and maybe even reanimate a friendly creature or two. Expect the unexpected, and remember: it\'s not a mistake, it\'s a discovery!', 
     icon: FlaskConical, subject: 'Science', 
     image: 'https://placehold.co/1200x400.png', 
-    aiHint: 'rainforest ecosystem 3d',
+    aiHint: 'quirky science lab',
     quests: [
-      { id: 's_q1', title: 'Molecule Mixer', description: 'Drag-and-drop molecules to form compounds.', zoneId: 'science', type: 'Individual', difficulty: 'Medium', points: 130 },
-      { id: 's_q2', title: 'Physics Phun: Inclined Planes', description: 'Simulate object movement on inclined planes.', zoneId: 'science', type: 'Individual', difficulty: 'Easy', points: 90 },
+      { id: 's_q1', title: 'Creature Feature: Build-A-Beast', description: 'Combine DNA samples to design and nurture your own unique creature. Will it be cute, cuddly, or catastrophically chaotic?', zoneId: 'science', type: 'Individual', difficulty: 'Medium', points: 130 },
+      { id: 's_q2', title: 'Eco-Challenge: Operation Biosphere Rescue', description: 'A miniature ecosystem is collapsing! Collaborate to identify pollutants, introduce helpful species, and restore balance before it\'s too late.', zoneId: 'science', type: 'Collaborative', difficulty: 'Hard', points: 190 },
+      { id: 's_q3', title: 'Rocket Launch: To the Mun and Back!', description: 'Design, build, and launch a miniature rocket. Calculate trajectories and fuel consumption to land safely on the class "Mun".', zoneId: 'science', type: 'Individual', difficulty: 'Medium', points: 150 },
+    ]
+  },
+  geography: { 
+    id: 'geography', name: 'World Explorer: The Cartographer\'s Compass HQ', 
+    description: 'Grab your compass and map! Explore dense jungles, navigate vast oceans, and scale towering mountains. Discover ancient ruins and document unique cultures. Adventure awaits at every coordinate!', 
+    icon: Globe, subject: 'Geography', 
+    image: 'https://placehold.co/1200x400.png', 
+    aiHint: 'explorer map jungle',
+    quests: [
+      { id: 'g_q1', title: 'The Lost City of El Dorado', description: 'Follow ancient clues to find the legendary city of gold. Beware of treacherous terrain and rival explorers!', zoneId: 'geography', type: 'Individual', difficulty: 'Hard', points: 200 },
+    ]
+  },
+  art: { 
+    id: 'art', name: 'Art Studio: The Dream Weaver\'s Workshop', 
+    description: 'Your imagination is the only limit! Sculpt mythical beasts from digital clay, paint vibrant murals on virtual walls, or animate epic tales. Let your creativity flow and inspire the world!', 
+    icon: Palette, subject: 'Art', 
+    image: 'https://placehold.co/1200x400.png', 
+    aiHint: 'fantasy art tools',
+    quests: [
+      { id: 'a_q1', title: 'Mural of Myths', description: 'Collaborate to create a massive digital mural depicting legendary creatures and epic battles.', zoneId: 'art', type: 'Collaborative', difficulty: 'Medium', points: 160 },
+    ]
+  },
+  music: { 
+    id: 'music', name: 'Music Hall: The Maestro\'s Grand Stage', 
+    description: 'Compose chart-topping hits, conduct virtual orchestras, or master exotic instruments. From classical symphonies to futuristic synth-scapes, the stage is yours!', 
+    icon: Music, subject: 'Music', 
+    image: 'https://placehold.co/1200x400.png', 
+    aiHint: 'futuristic music stage',
+    quests: [
+       { id: 'mu_q1', title: 'Symphony of the Stars', description: 'Compose an original piece of music inspired by the cosmos. Use unique sound effects to represent planets and nebulae.', zoneId: 'music', type: 'Individual', difficulty: 'Hard', points: 180 },
+    ]
+  },
+  languages: { 
+    id: 'languages', name: 'Language Hub: The Polyglot\'s Portal Chamber', 
+    description: 'Step through portals to converse with historical figures, negotiate with alien diplomats, or decipher ancient texts. Master new tongues and unlock global secrets!', 
+    icon: Languages, subject: 'Languages', 
+    image: 'https://placehold.co/1200x400.png', 
+    aiHint: 'glowing language portal',
+    quests: [
+       { id: 'l_q1', title: 'The Rosetta Stone Riddle', description: 'Translate a series of cryptic messages in three different ancient languages to unlock a hidden treasure.', zoneId: 'languages', type: 'Individual', difficulty: 'Hard', points: 190 },
+    ]
+  },
+  technology: { 
+    id: 'technology', name: 'Tech Hub: Future Innovators\' Command Center', 
+    description: 'Code AI assistants, design smart cities, or defend against cyber threats in this high-tech sandbox. The future is in your hands – build it, break it, and rebuild it better!', 
+    icon: Rocket, subject: 'Technology', 
+    image: 'https://placehold.co/1200x400.png', 
+    aiHint: 'holographic tech interface',
+    quests: [
+       { id: 't_q1', title: 'AI Uprising: Code Red', description: 'A rogue AI is causing chaos! Collaborate to debug its code and restore order before it takes over the network.', zoneId: 'technology', type: 'Collaborative', difficulty: 'Hard', points: 220 },
+    ]
+  },
+  physics: { 
+    id: 'physics', name: 'Physics Playground: Quantum Leap Lab Complex', 
+    description: 'Defy gravity, bend light, and explore the bizarre world of quantum mechanics. Conduct experiments that would make Einstein jealous, but try not to create any black holes in the classroom!', 
+    icon: Atom, subject: 'Physics', 
+    image: 'https://placehold.co/1200x400.png', 
+    aiHint: 'anti gravity chamber',
+    quests: [
+       { id: 'p_q1', title: 'The Wormhole Wobble', description: 'Stabilize a miniature wormhole by correctly applying principles of general relativity. Get it wrong, and who knows where you\'ll end up!', zoneId: 'physics', type: 'Individual', difficulty: 'Hard', points: 210 },
+    ]
+  },
+  psychology: { 
+    id: 'psychology', name: 'Mind Maze: The Empathy Engine Labyrinth', 
+    description: 'Navigate intricate social scenarios, understand diverse perspectives, and master the art of emotional intelligence. Can you solve the human puzzle?', 
+    icon: BrainCog, subject: 'Psychology', 
+    image: 'https://placehold.co/1200x400.png', 
+    aiHint: 'surreal brain landscape',
+    quests: [
+       { id: 'ps_q1', title: 'The Empathy Test', description: 'Experience a day in someone else\'s shoes through an advanced simulation. Make choices that demonstrate understanding and compassion to pass.', zoneId: 'psychology', type: 'Individual', difficulty: 'Medium', points: 140 },
     ]
   },
 };
@@ -49,7 +122,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
   const zone = MOCK_ZONES[params.zoneId] || MOCK_ZONES['history']; // Fallback to history if not found
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 px-4 md:px-0">
       <Button variant="outline" asChild className="mb-6">
         <Link href="/learning-zones">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to All Zones
@@ -66,7 +139,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
           data-ai-hint={zone.aiHint}
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         <div className="absolute bottom-0 left-0 p-6 md:p-8">
           {zone.icon && <zone.icon className="h-12 w-12 text-white mb-2" />}
           <h1 className="font-headline text-3xl md:text-4xl font-bold text-white">{zone.name}</h1>
@@ -82,14 +155,14 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
         {zone.quests && zone.quests.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {zone.quests.map((quest) => (
-              <Card key={quest.id} className="flex flex-col h-full hover:shadow-lg transition-shadow">
+              <Card key={quest.id} className="flex flex-col h-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 rounded-lg">
                 <CardHeader>
                   <CardTitle>{quest.title}</CardTitle>
                   <CardDescription className="h-12 line-clamp-2">{quest.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Badge variant={quest.type === 'Collaborative' ? 'default' : 'secondary'}>{quest.type}</Badge>
+                    <Badge variant={quest.type === 'Collaborative' ? 'default' : 'secondary'} className={`${quest.type === 'Collaborative' ? 'bg-accent text-accent-foreground' : ''}`}>{quest.type}</Badge>
                     <Badge variant="outline">{quest.difficulty}</Badge>
                   </div>
                   <p><Star className="inline mr-1 h-4 w-4 text-yellow-400" /> {quest.points} Points</p>
@@ -105,33 +178,42 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground">No quests available in this zone yet. Check back soon!</p>
+          <Card className="text-center py-8">
+            <CardContent>
+                 <Puzzle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No quests available in this zone yet. Our quest designers are hard at work!</p>
+                 <Button asChild variant="outline" className="mt-4">
+                    <Link href="/quests">Suggest a Quest!</Link>
+                 </Button>
+            </CardContent>
+          </Card>
         )}
       </section>
 
       <section>
         <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
           <Users className="mr-3 h-7 w-7 text-accent" />
-          Collaborative Challenges
+          Zone Mechanics
         </h2>
-        <Card>
+        <Card className="shadow-md rounded-lg">
           <CardContent className="pt-6">
             <p className="text-muted-foreground">
-              Many quests in {zone.name} feature unique collaborative challenges like <span className="font-semibold text-accent">Collaboration Doors</span> (requiring synchronized answers) and <span className="font-semibold text-accent">Broken Bridges</span> (demanding teamwork and sacrifice). These are designed to foster empathy, communication, and collective problem-solving.
+              Many quests in {zone.name} feature unique collaborative challenges like <span className="font-semibold text-accent">Collaboration Doors</span> (requiring synchronized answers or actions) and <span className="font-semibold text-accent">Broken Bridges</span> (demanding teamwork, resource sharing, or even point sacrifices for the greater good). These are designed to foster empathy, communication, and collective problem-solving.
             </p>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start p-4 border rounded-lg bg-background">
+                <div className="flex items-start p-4 border rounded-lg bg-card shadow-sm">
                     <Users className="h-8 w-8 text-primary mr-3 mt-1 shrink-0" />
                     <div>
-                        <h4 className="font-semibold">Collaboration Doors</h4>
-                        <p className="text-sm text-muted-foreground">Two students must answer different but related questions simultaneously to proceed.</p>
+                        <h4 className="font-semibold text-card-foreground">Collaboration Doors</h4>
+                        <p className="text-sm text-muted-foreground">Two or more students must solve related puzzles or perform actions simultaneously to unlock the path forward. Communication is key!</p>
                     </div>
                 </div>
-                 <div className="flex items-start p-4 border rounded-lg bg-background">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary mr-3 mt-1 shrink-0"><path d="M2 8L2.75 10.25C3.5 12.5 4.5 13.5 6.5 13.5C8.5 13.5 9.5 12.5 10.25 10.25L11 8"/><path d="M13 8L13.75 10.25C14.5 12.5 15.5 13.5 17.5 13.5C19.5 13.5 20.5 12.5 21.25 10.25L22 8"/><path d="M8 13.5V16H16V13.5"/><path d="M8 16L6.5 22H17.5L16 16"/></svg>
+                 <div className="flex items-start p-4 border rounded-lg bg-card shadow-sm">
+                    {/* Using a bridge-like SVG */}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary mr-3 mt-1 shrink-0"><path d="M5 12q0-1.5 1.063-2.562T8.625 8H5V6h3.625q.938 0 1.703.531t1.109 1.391L12 10l.562-2.078c.344-.86.82-1.39 1.703-1.39H20v2h-3.625q-1.5 0-2.562 1.063T12.75 12H19v2h-6.25q0 1.5-1.062 2.563T8.625 17.625H5v-2h3.625q1.5 0 2.563-1.062T12.25 12H5zM2 8l1-2m18 2l1-2m-1 14l1 2M2 18l1 2"/></svg>
                     <div>
-                        <h4 className="font-semibold">Broken Bridges</h4>
-                        <p className="text-sm text-muted-foreground">Team members might need to sacrifice points or resources for the group to cross.</p>
+                        <h4 className="font-semibold text-card-foreground">Broken Bridges</h4>
+                        <p className="text-sm text-muted-foreground">The path is blocked! Team members might need to sacrifice points, share resources, or solve a collective mini-game for the group to cross.</p>
                     </div>
                 </div>
             </div>
