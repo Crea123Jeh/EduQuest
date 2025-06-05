@@ -18,93 +18,161 @@ interface UserSettings {
   emailNotifications: boolean;
   pushNotifications: boolean;
   soundEffects: boolean;
-  language: string;
+  language: 'en' | 'id'; // Simplified for example
   dataSharing: boolean;
-  // darkMode is handled by useTheme now
 }
+
+const pageTranslations = {
+  en: {
+    pageTitle: 'Settings',
+    pageDescription: 'Manage your account preferences and application settings.',
+    accountSettingsTitle: 'Account Settings',
+    fullNameLabel: 'Full Name',
+    emailAddressLabel: 'Email Address',
+    changePasswordLabel: 'Change Password',
+    newPasswordPlaceholder: 'New Password',
+    notificationSettingsTitle: 'Notification Settings',
+    emailNotificationsLabel: 'Email Notifications',
+    emailNotificationsDescription: 'Receive updates about new quests and classroom activities.',
+    pushNotificationsLabel: 'Push Notifications',
+    pushNotificationsDescription: 'Get real-time alerts on your device.',
+    appearanceSettingsTitle: 'Appearance & Accessibility',
+    darkModeLabel: 'Dark Mode',
+    darkModeDescription: 'Toggle between light and dark themes.',
+    soundEffectsLabel: 'Sound Effects',
+    soundEffectsDescription: 'Enable or disable in-game sound effects. (Audio Description for visually impaired is a separate feature.)',
+    languageLabel: 'Language',
+    privacySettingsTitle: 'Privacy & Data',
+    dataSharingLabel: 'Data Sharing for AI Personalization',
+    dataSharingDescription: 'Allow EduQuest to use your learning data to personalize quests and content (e.g., via Google Classroom integration).',
+    downloadDataButton: 'Download My Data',
+    deleteAccountButton: 'Delete Account',
+    privacyPolicyLink: 'Privacy Policy',
+    termsOfServiceLink: 'Terms of Service',
+    saveChangesButton: 'Save Changes',
+    savingChangesButton: 'Saving Changes...',
+    settingsUpdatedTitle: 'Settings Updated',
+    settingsUpdatedDescription: 'Your preferences have been saved successfully.',
+  },
+  id: {
+    pageTitle: 'Pengaturan',
+    pageDescription: 'Kelola preferensi akun dan pengaturan aplikasi Anda.',
+    accountSettingsTitle: 'Pengaturan Akun',
+    fullNameLabel: 'Nama Lengkap',
+    emailAddressLabel: 'Alamat Email',
+    changePasswordLabel: 'Ubah Kata Sandi',
+    newPasswordPlaceholder: 'Kata Sandi Baru',
+    notificationSettingsTitle: 'Pengaturan Notifikasi',
+    emailNotificationsLabel: 'Notifikasi Email',
+    emailNotificationsDescription: 'Terima pembaruan tentang quest baru dan aktivitas kelas.',
+    pushNotificationsLabel: 'Notifikasi Push',
+    pushNotificationsDescription: 'Dapatkan lansiran waktu nyata di perangkat Anda.',
+    appearanceSettingsTitle: 'Tampilan & Aksesibilitas',
+    darkModeLabel: 'Mode Gelap',
+    darkModeDescription: 'Beralih antara tema terang dan gelap.',
+    soundEffectsLabel: 'Efek Suara',
+    soundEffectsDescription: 'Aktifkan atau nonaktifkan efek suara dalam game. (Deskripsi Audio untuk tunanetra adalah fitur terpisah.)',
+    languageLabel: 'Bahasa',
+    privacySettingsTitle: 'Privasi & Data',
+    dataSharingLabel: 'Berbagi Data untuk Personalisasi AI',
+    dataSharingDescription: 'Izinkan EduQuest menggunakan data pembelajaran Anda untuk mempersonalisasi quest dan konten (misalnya, melalui integrasi Google Classroom).',
+    downloadDataButton: 'Unduh Data Saya',
+    deleteAccountButton: 'Hapus Akun',
+    privacyPolicyLink: 'Kebijakan Privasi',
+    termsOfServiceLink: 'Ketentuan Layanan',
+    saveChangesButton: 'Simpan Perubahan',
+    savingChangesButton: 'Menyimpan Perubahan...',
+    settingsUpdatedTitle: 'Pengaturan Diperbarui',
+    settingsUpdatedDescription: 'Preferensi Anda telah berhasil disimpan.',
+  },
+};
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const { theme, setTheme, toggleTheme } = useTheme();
   
-  // State for settings other than dark mode
   const [settings, setSettings] = useState<UserSettings>({
     emailNotifications: true,
     pushNotifications: false,
     soundEffects: true,
-    language: 'en',
+    language: 'en', // Default language
     dataSharing: true,
   });
 
-  // Effect to potentially load settings from localStorage (excluding dark mode)
   useEffect(() => {
-    // Placeholder for loading other settings if they were persisted
-    // For example:
-    // const savedSettings = localStorage.getItem('user-app-settings');
-    // if (savedSettings) {
-    //   setSettings(JSON.parse(savedSettings));
-    // }
+    const savedSettings = localStorage.getItem('user-app-settings');
+    if (savedSettings) {
+      const parsedSettings = JSON.parse(savedSettings);
+      // Ensure language is one of the allowed values, default to 'en' if not
+      if (parsedSettings.language && (parsedSettings.language === 'en' || parsedSettings.language === 'id')) {
+        setSettings(parsedSettings);
+      } else {
+        setSettings({ ...parsedSettings, language: 'en' });
+      }
+    }
   }, []);
 
-
-  const handleSettingChange = (key: keyof UserSettings, value: boolean | string) => {
+  const handleSettingChange = (key: keyof Omit<UserSettings, 'language'>, value: boolean | string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleLanguageChange = (value: 'en' | 'id') => {
+    setSettings(prev => ({ ...prev, language: value }));
   };
 
   const handleSaveChanges = async () => {
     setIsSaving(true);
-    // Simulate API call for saving settings (excluding dark mode)
     await new Promise(resolve => setTimeout(resolve, 1500));
-    // Placeholder for saving other settings if they were persisted
-    // For example:
-    // localStorage.setItem('user-app-settings', JSON.stringify(settings));
+    localStorage.setItem('user-app-settings', JSON.stringify(settings));
     console.log("Non-theme settings saved:", settings);
     toast({
-      title: "Settings Updated",
-      description: "Your preferences have been saved successfully.",
+      title: currentTranslations.settingsUpdatedTitle,
+      description: currentTranslations.settingsUpdatedDescription,
     });
     setIsSaving(false);
   };
+
+  const currentTranslations = pageTranslations[settings.language] || pageTranslations.en;
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-headline text-3xl font-bold text-foreground">Settings</h1>
-          <p className="text-lg text-muted-foreground">Manage your account preferences and application settings.</p>
+          <h1 className="font-headline text-3xl font-bold text-foreground">{currentTranslations.pageTitle}</h1>
+          <p className="text-lg text-muted-foreground">{currentTranslations.pageDescription}</p>
         </div>
 
         <Card className="mb-8 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><UserCircle className="h-6 w-6 text-accent" /> Account Settings</CardTitle>
+            <CardTitle className="flex items-center gap-2"><UserCircle className="h-6 w-6 text-accent" /> {currentTranslations.accountSettingsTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{currentTranslations.fullNameLabel}</Label>
               <Input id="name" defaultValue="Alex Chen" />
             </div>
             <div>
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email">{currentTranslations.emailAddressLabel}</Label>
               <Input id="email" type="email" defaultValue="alex.chen@example.com" />
             </div>
             <div>
-              <Label htmlFor="password">Change Password</Label>
-              <Input id="password" type="password" placeholder="New Password" />
+              <Label htmlFor="password">{currentTranslations.changePasswordLabel}</Label>
+              <Input id="password" type="password" placeholder={currentTranslations.newPasswordPlaceholder} />
             </div>
           </CardContent>
         </Card>
         
         <Card className="mb-8 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Bell className="h-6 w-6 text-accent" /> Notification Settings</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Bell className="h-6 w-6 text-accent" /> {currentTranslations.notificationSettingsTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="emailNotifications" className="flex flex-col space-y-1">
-                <span>Email Notifications</span>
+                <span>{currentTranslations.emailNotificationsLabel}</span>
                 <span className="font-normal leading-snug text-muted-foreground">
-                  Receive updates about new quests and classroom activities.
+                  {currentTranslations.emailNotificationsDescription}
                 </span>
               </Label>
               <Switch id="emailNotifications" checked={settings.emailNotifications} onCheckedChange={(val) => handleSettingChange('emailNotifications', val)} />
@@ -112,9 +180,9 @@ export default function SettingsPage() {
             <Separator />
             <div className="flex items-center justify-between">
               <Label htmlFor="pushNotifications" className="flex flex-col space-y-1">
-                <span>Push Notifications</span>
+                <span>{currentTranslations.pushNotificationsLabel}</span>
                  <span className="font-normal leading-snug text-muted-foreground">
-                  Get real-time alerts on your device.
+                  {currentTranslations.pushNotificationsDescription}
                 </span>
               </Label>
               <Switch id="pushNotifications" checked={settings.pushNotifications} onCheckedChange={(val) => handleSettingChange('pushNotifications', val)} />
@@ -124,14 +192,14 @@ export default function SettingsPage() {
 
         <Card className="mb-8 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Palette className="h-6 w-6 text-accent" /> Appearance & Accessibility</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Palette className="h-6 w-6 text-accent" /> {currentTranslations.appearanceSettingsTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <Label htmlFor="darkMode" className="flex flex-col space-y-1">
-                <span>Dark Mode</span>
+                <span>{currentTranslations.darkModeLabel}</span>
                 <span className="font-normal leading-snug text-muted-foreground">
-                  Toggle between light and dark themes.
+                  {currentTranslations.darkModeDescription}
                 </span>
               </Label>
               <Switch id="darkMode" checked={theme === 'dark'} onCheckedChange={toggleTheme} />
@@ -139,24 +207,24 @@ export default function SettingsPage() {
              <Separator />
             <div className="flex items-center justify-between">
               <Label htmlFor="soundEffects" className="flex flex-col space-y-1">
-                <span>Sound Effects</span>
+                <span>{currentTranslations.soundEffectsLabel}</span>
                 <span className="font-normal leading-snug text-muted-foreground">
-                  Enable or disable in-game sound effects. (Audio Description for visually impaired is a separate feature.)
+                  {currentTranslations.soundEffectsDescription}
                 </span>
               </Label>
               <Switch id="soundEffects" checked={settings.soundEffects} onCheckedChange={(val) => handleSettingChange('soundEffects', val)} />
             </div>
              <Separator />
              <div>
-                <Label htmlFor="language">Language</Label>
-                <Select value={settings.language} onValueChange={(val) => handleSettingChange('language', val as string)}>
+                <Label htmlFor="language">{currentTranslations.languageLabel}</Label>
+                <Select value={settings.language} onValueChange={(val) => handleLanguageChange(val as 'en' | 'id')}>
                   <SelectTrigger id="language" className="mt-1">
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English</SelectItem>
                     <SelectItem value="id">Bahasa Indonesia</SelectItem>
-                    <SelectItem value="es">Español</SelectItem>
+                    {/* <SelectItem value="es">Español</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -165,35 +233,36 @@ export default function SettingsPage() {
         
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Shield className="h-6 w-6 text-accent" /> Privacy & Data</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Shield className="h-6 w-6 text-accent" /> {currentTranslations.privacySettingsTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
              <div className="flex items-center justify-between">
               <Label htmlFor="dataSharing" className="flex flex-col space-y-1">
-                <span>Data Sharing for AI Personalization</span>
+                <span>{currentTranslations.dataSharingLabel}</span>
                 <span className="font-normal leading-snug text-muted-foreground">
-                  Allow EduQuest to use your learning data to personalize quests and content (e.g., via Google Classroom integration).
+                  {currentTranslations.dataSharingDescription}
                 </span>
               </Label>
               <Switch id="dataSharing" checked={settings.dataSharing} onCheckedChange={(val) => handleSettingChange('dataSharing', val)} />
             </div>
             <Separator />
             <div>
-              <Button variant="outline">Download My Data</Button>
-              <Button variant="destructive" className="ml-2">Delete Account</Button>
+              <Button variant="outline">{currentTranslations.downloadDataButton}</Button>
+              <Button variant="destructive" className="ml-2">{currentTranslations.deleteAccountButton}</Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              For more information, please review our <Link href="/privacy-policy" className="underline text-accent">Privacy Policy</Link> and <Link href="/terms-of-service" className="underline text-accent">Terms of Service</Link>.
+              For more information, please review our <Link href="/privacy-policy" className="underline text-accent">{currentTranslations.privacyPolicyLink}</Link> and <Link href="/terms-of-service" className="underline text-accent">{currentTranslations.termsOfServiceLink}</Link>.
             </p>
           </CardContent>
         </Card>
 
         <div className="mt-8 flex justify-end">
           <Button size="lg" onClick={handleSaveChanges} disabled={isSaving}>
-             <Save className="mr-2 h-4 w-4" /> {isSaving ? 'Saving Changes...' : 'Save Changes'}
+             <Save className="mr-2 h-4 w-4" /> {isSaving ? currentTranslations.savingChangesButton : currentTranslations.saveChangesButton}
           </Button>
         </div>
       </div>
     </div>
   );
 }
+
