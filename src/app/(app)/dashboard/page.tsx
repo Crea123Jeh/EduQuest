@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ZoneCard } from '@/components/ZoneCard';
 import { ClassroomCard } from '@/components/ClassroomCard';
 import type { LearningZone, Classroom, Quest } from '@/types';
