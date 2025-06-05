@@ -1,79 +1,47 @@
 
-import Link from 'next/link';
+'use client';
 
-export default function LandingPage() {
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Logo } from '@/components/Logo';
 
-  // Add CSS styles within the component for simplicity in this example
-  const styles = `
-    @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
+export default function LandingAnimationPage() {
+  const router = useRouter();
 
-    .fade-in {
-      animation: fadeIn 1s ease-out forwards;
-      opacity: 0; /* Start invisible */
-    }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.push('/'); // Redirect to the main home page (src/app/page.tsx)
+    }, 2000); // 2 seconds total for splash screen
 
-    @keyframes logoPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-
-    .logo-animation {
-      animation: logoPulse 2s ease-in-out infinite;
-    }
-  `;
+    return () => clearTimeout(timer); // Cleanup timer on component unmount
+  }, [router]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20 px-4 text-center">
-        <h1 className="text-5xl font-bold mb-4">Welcome to EduQuest</h1>
-        <p className="text-xl mb-8">Gamify your learning journey and achieve your academic goals!</p>
-        <div className="space-x-4">
-          <Link href="/signup" className="bg-white text-blue-600 py-3 px-8 rounded-full font-semibold hover:bg-gray-200">
-            Sign Up
-          </Link>
-          <Link href="/login" className="border border-white text-white py-3 px-8 rounded-full font-semibold hover:bg-blue-700">
-            Log In
-          </Link>
-        </div>
-        {/* Placeholder for EduQuest logo */}
-        <div id="eduquest-logo" className="mt-8 logo-animation"> {/* Added logo-animation class here */}
-          {/* Replace with your actual logo component or image */}
-          <div className="w-24 h-24 bg-blue-800 mx-auto rounded-full flex items-center justify-center text-white text-2xl font-bold">EQ</div>
-        </div>
-      </section>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
+      <div className="animate-popup">
+        <Logo iconSize={64} textSize="text-5xl" />
+      </div>
+      {/* Scoped CSS for the pop-up animation */}
+      <style jsx global>{`
+        @keyframes popUp {
+          0% {
+            transform: scale(0.5) translateY(30px);
+            opacity: 0;
+          }
+          70% {
+            transform: scale(1.1) translateY(0px);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1) translateY(0px);
+            opacity: 1;
+          }
+        }
 
-      {/* Features Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-12 text-gray-800">Discover the Power of EduQuest</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-lg shadow-md">
-              <h3 className="text-2xl font-semibold mb-4 text-blue-600">Engaging Quests</h3>
-              <p className="text-gray-600">Turn your lessons into exciting quests with interactive challenges and rewards.</p>
-            </div>
-            <div className="bg-white p-8 rounded-lg shadow-md">
-              <h3 className="text-2xl font-semibold mb-4 text-green-600">Personalized Learning</h3>
-              <p className="text-gray-600">Tailor your learning path and progress at your own pace with adaptive content.</p>
-            </div>
-            <div className="bg-white p-8 rounded-lg shadow-md">
-              <h3 className="text-2xl font-semibold mb-4 text-purple-600">Track Your Progress</h3>
-              <p className="text-gray-600">Visualize your achievements, track your performance, and stay motivated.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8 text-center">
-        <p>&copy; 2023 EduQuest. All rights reserved.</p>
-      </footer>
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-      {/* Removed the problematic script tag */}
+        .animate-popup {
+          animation: popUp 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        }
+      `}</style>
     </div>
   );
 }
