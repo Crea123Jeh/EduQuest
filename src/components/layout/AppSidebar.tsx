@@ -17,7 +17,7 @@ import {
   LayoutDashboard,
   Shapes,
   Users,
-  Puzzle,
+  Wand2, // Changed from Puzzle for Quest Generator
   Palette,
   Brain,
   UserCircle,
@@ -26,7 +26,8 @@ import {
   BookOpenCheck,
   History,
   FlaskConical,
-  Calculator
+  Calculator,
+  Puzzle // Kept Puzzle in case it's used elsewhere, or can be removed if not
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -41,7 +42,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, matchSegments: 1 },
   { href: '/learning-zones', label: 'Learning Zones', icon: Shapes, matchSegments: 1 },
   { href: '/classrooms', label: 'Classrooms', icon: Users, matchSegments: 1 },
-  { href: '/quests', label: 'My Quests', icon: Puzzle, matchSegments: 1 }, // This will be AI quest generator for now
+  { href: '/quests', label: 'Quest Generator', icon: Wand2, matchSegments: 1 },
   { href: '/design-studio', label: 'Design Studio', icon: Palette, matchSegments: 1 },
   { href: '/reflection-chamber', label: 'Reflection Chamber', icon: Brain, matchSegments: 1 },
 ];
