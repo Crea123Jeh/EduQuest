@@ -34,7 +34,7 @@ function LandingAnimationContent() {
       }
       
       router.push(urlToPush);
-    }, 2000); // 2 seconds total for splash screen
+    }, 1000); // Changed from 2000 to 1000 for 1 second delay
 
     return () => clearTimeout(timer); // Cleanup timer on component unmount
   }, [router, searchParams]);
@@ -79,3 +79,4 @@ export default function LandingAnimationPage() {
     </Suspense>
   );
 }
+
