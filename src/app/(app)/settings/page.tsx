@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -9,32 +10,56 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Bell, Palette, Shield, Volume2, Languages, UserCircle, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useTheme } from '@/context/ThemeProvider';
+
+interface UserSettings {
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  soundEffects: boolean;
+  language: string;
+  dataSharing: boolean;
+  // darkMode is handled by useTheme now
+}
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
-
-  // Mock settings state - in a real app, this would come from user data
-  const [settings, setSettings] = useState({
+  const { theme, setTheme, toggleTheme } = useTheme();
+  
+  // State for settings other than dark mode
+  const [settings, setSettings] = useState<UserSettings>({
     emailNotifications: true,
     pushNotifications: false,
-    darkMode: false,
     soundEffects: true,
     language: 'en',
     dataSharing: true,
   });
 
-  const handleSettingChange = (key: keyof typeof settings, value: boolean | string) => {
+  // Effect to potentially load settings from localStorage (excluding dark mode)
+  useEffect(() => {
+    // Placeholder for loading other settings if they were persisted
+    // For example:
+    // const savedSettings = localStorage.getItem('user-app-settings');
+    // if (savedSettings) {
+    //   setSettings(JSON.parse(savedSettings));
+    // }
+  }, []);
+
+
+  const handleSettingChange = (key: keyof UserSettings, value: boolean | string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
   const handleSaveChanges = async () => {
     setIsSaving(true);
-    // Simulate API call
+    // Simulate API call for saving settings (excluding dark mode)
     await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log("Settings saved:", settings);
+    // Placeholder for saving other settings if they were persisted
+    // For example:
+    // localStorage.setItem('user-app-settings', JSON.stringify(settings));
+    console.log("Non-theme settings saved:", settings);
     toast({
       title: "Settings Updated",
       description: "Your preferences have been saved successfully.",
@@ -109,7 +134,7 @@ export default function SettingsPage() {
                   Toggle between light and dark themes.
                 </span>
               </Label>
-              <Switch id="darkMode" checked={settings.darkMode} onCheckedChange={(val) => handleSettingChange('darkMode', val)} />
+              <Switch id="darkMode" checked={theme === 'dark'} onCheckedChange={toggleTheme} />
             </div>
              <Separator />
             <div className="flex items-center justify-between">
