@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { User, Mail, Award, ShieldCheck, Edit3, Star, TrendingUp, CheckSquare } from 'lucide-react';
+import { User, Mail, Award, ShieldCheck, Edit3, Star, TrendingUp, CheckSquare, Users } from 'lucide-react';
 import Link from 'next/link';
 
 // Mock data for demonstration
