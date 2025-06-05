@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -13,12 +14,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Search, Bell, Settings, User, LogOut } from 'lucide-react';
+import { Menu, Search, Bell, Settings, User, LogOut, Star } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { useSidebar } from '@/components/ui/sidebar';
 
 export function AppHeader() {
   const { toggleSidebar } = useSidebar();
+  const userPoints = 1250; // Mock points
 
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
@@ -53,11 +55,17 @@ export function AppHeader() {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="https://placehold.co/40x40.png" alt="User Avatar" data-ai-hint="person avatar" />
-                <AvatarFallback>EQ</AvatarFallback>
-              </Avatar>
+            <Button variant="ghost" className="rounded-full p-1 h-auto">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-sm text-muted-foreground pr-1">
+                  <Star className="h-4 w-4 text-yellow-400" />
+                  <span>{userPoints}</span>
+                </div>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="https://placehold.co/40x40.png" alt="User Avatar" data-ai-hint="person avatar" />
+                  <AvatarFallback>EQ</AvatarFallback>
+                </Avatar>
+              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
