@@ -1,3 +1,4 @@
+
 'use server';
 
 import { generateDynamicQuests as genkitGenerateDynamicQuests } from '@/ai/flows/generate-dynamic-quests';
@@ -7,22 +8,33 @@ export async function generateDynamicQuestsAction(
   input: GenerateDynamicQuestsInput
 ): Promise<GenerateDynamicQuestsOutput> {
   try {
-    // Assuming studentLearningHistory might come from a database or another service in a real app.
-    // For now, we'll pass it through if provided, or use a default.
+    // Ensure studentLearningHistory is a string, even if empty or undefined from client
     const fullInput: GenerateDynamicQuestsInput = {
+      ...input,
       studentLearningHistory: input.studentLearningHistory || "No specific learning history available. Focus on general concepts.",
-      topic: input.topic,
-      difficultyLevel: input.difficultyLevel,
-      numberOfQuestions: input.numberOfQuestions,
+      // Ensure numberOfQuestions is a number, though zod coercion on the client should handle it
+      numberOfQuestions: Number(input.numberOfQuestions),
     };
     
     const result = await genkitGenerateDynamicQuests(fullInput);
+
+    // The AI flow should ideally always return a 'questions' array, even if empty.
+    // Zod validation in the flow itself should catch malformed outputs from the LLM.
+    if (!result || typeof result.questions === 'undefined') {
+      console.error('Error generating dynamic quests: AI flow returned invalid data structure.', result);
+      // Throw an error that the client-side catch block will handle
+      throw new Error('AI failed to return expected quest structure.');
+    }
     return result;
+
   } catch (error) {
-    console.error('Error generating dynamic quests:', error);
-    // It's good practice to return a structured error or throw a custom error
-    // that the client can handle gracefully.
-    return { questions: [`Error generating questions: ${error instanceof Error ? error.message : 'Unknown error'}`] };
+    console.error('Error in generateDynamicQuestsAction:', error);
+    // Re-throw the error so the client-side try/catch can handle it and update UI
+    // This gives more control to the client for displaying specific error messages.
+    if (error instanceof Error) {
+      throw new Error(`Failed to generate quests: ${error.message}`);
+    }
+    throw new Error('An unknown error occurred while generating quests.');
   }
 }
 

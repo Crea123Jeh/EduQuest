@@ -21,3 +21,14 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+};
+
+export default nextConfig;

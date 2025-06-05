@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -13,14 +14,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateDynamicQuestsAction } from '@/lib/actions';
-import type { GenerateDynamicQuestsInput } from '@/ai/flows/generate-dynamic-quests';
-import { Loader2, Wand2, AlertTriangle } from 'lucide-react';
+import type { GenerateDynamicQuestsInput, GenerateDynamicQuestsOutput, GeneratedQuestion, QuestionType } from '@/ai/flows/generate-dynamic-quests';
+import { Loader2, Wand2, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const questFormSchema = z.object({
   topic: z.string().min(3, { message: 'Topic must be at least 3 characters.' }),
   difficultyLevel: z.enum(['easy', 'medium', 'hard']),
-  numberOfQuestions: z.coerce.number().min(1).max(10),
+  numberOfQuestions: z.coerce.number().min(1).max(5), // Max 5 for better performance & LLM consistency
   studentLearningHistory: z.string().optional(),
+  questionType: z.enum(['open-ended', 'multiple-choice', 'fill-in-the-blank']),
 });
 
 type QuestFormValues = z.infer<typeof questFormSchema>;
@@ -28,7 +30,8 @@ type QuestFormValues = z.infer<typeof questFormSchema>;
 export default function QuestsPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedQuests, setGeneratedQuests] = useState<string[]>([]);
+  const [generatedQuests, setGeneratedQuests] = useState<GeneratedQuestion[]>([]);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   const form = useForm<QuestFormValues>({
     resolver: zodResolver(questFormSchema),
@@ -37,34 +40,82 @@ export default function QuestsPage() {
       difficultyLevel: 'medium',
       numberOfQuestions: 3,
       studentLearningHistory: 'Example: Student struggles with fractions but is strong in basic algebra. Recently covered geometry.',
+      questionType: 'open-ended',
     },
   });
 
   const onSubmit: SubmitHandler<QuestFormValues> = async (data) => {
     setIsLoading(true);
     setGeneratedQuests([]);
+    setGenerationError(null);
     try {
-      const result = await generateDynamicQuestsAction(data as GenerateDynamicQuestsInput);
-      if (result.questions && result.questions.length > 0 && !result.questions[0].startsWith("Error generating questions")) {
+      // Ensure data types match GenerateDynamicQuestsInput, especially numberOfQuestions
+      const inputForAI: GenerateDynamicQuestsInput = {
+        ...data,
+        numberOfQuestions: Number(data.numberOfQuestions), 
+        questionType: data.questionType as QuestionType, // Zod enum handles this
+      };
+      const result = await generateDynamicQuestsAction(inputForAI);
+      
+      if (result.questions && result.questions.length > 0) {
         setGeneratedQuests(result.questions);
         toast({
           title: 'Quests Generated!',
           description: `${result.questions.length} new quests are ready.`,
         });
       } else {
-        throw new Error(result.questions[0] || 'Failed to generate quests.');
+        // This case might occur if the AI returns an empty list but no explicit error
+        setGenerationError('The AI generated no quests. Try adjusting your parameters.');
+        toast({
+          title: 'No Quests Generated',
+          description: 'The AI did not return any quests. Please try different inputs.',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Quest generation error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred while generating quests.';
+      setGenerationError(errorMessage);
       toast({
         title: 'Error Generating Quests',
         description: errorMessage,
         variant: 'destructive',
       });
-       setGeneratedQuests([`Failed to generate quests: ${errorMessage}`]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const renderQuestion = (quest: GeneratedQuestion, index: number) => {
+    switch (quest.type) {
+      case 'open-ended':
+        return <p>{quest.question}</p>;
+      case 'multiple-choice':
+        return (
+          <div>
+            <p className="font-medium">{quest.question}</p>
+            <ul className="list-disc list-inside pl-4 mt-2 space-y-1">
+              {quest.options.map((option, i) => (
+                <li key={i} className={option === quest.correctAnswer ? 'text-green-600 font-semibold' : ''}>
+                  {option}
+                  {option === quest.correctAnswer && <CheckCircle className="inline ml-2 h-4 w-4" />}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      case 'fill-in-the-blank':
+        return (
+          <div>
+            <p>{quest.questionWithBlank}</p>
+            <p className="text-sm text-green-600">
+              Answer: <span className="font-semibold">{quest.answer}</span>
+            </p>
+          </div>
+        );
+      default:
+        // Should not happen with discriminated union
+        return <p>Unknown question type.</p>;
     }
   };
 
@@ -78,7 +129,7 @@ export default function QuestsPage() {
           </div>
           <CardDescription>
             Craft personalized quests based on student needs or explore new topics.
-            Integrates with Google Classroom data for tailored experiences (simulated).
+            Select question types for more tailored learning experiences.
           </CardDescription>
         </CardHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -109,6 +160,22 @@ export default function QuestsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div>
+                <Label htmlFor="questionType">Question Type</Label>
+                <Select
+                  onValueChange={(value) => form.setValue('questionType', value as QuestFormValues['questionType'])}
+                  defaultValue={form.getValues('questionType')}
+                >
+                  <SelectTrigger id="questionType">
+                    <SelectValue placeholder="Select question type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open-ended">Open-ended</SelectItem>
+                    <SelectItem value="multiple-choice">Multiple Choice</SelectItem>
+                    <SelectItem value="fill-in-the-blank">Fill in the Blank</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label htmlFor="difficultyLevel">Difficulty Level</Label>
                 <Select
@@ -125,20 +192,20 @@ export default function QuestsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label htmlFor="numberOfQuestions">Number of Questions</Label>
+            </div>
+             <div>
+                <Label htmlFor="numberOfQuestions">Number of Questions (1-5)</Label>
                 <Input
                   id="numberOfQuestions"
                   type="number"
                   min="1"
-                  max="10"
+                  max="5"
                   {...form.register('numberOfQuestions')}
                 />
                 {form.formState.errors.numberOfQuestions && (
                   <p className="text-sm text-destructive mt-1">{form.formState.errors.numberOfQuestions.message}</p>
                 )}
               </div>
-            </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -153,29 +220,48 @@ export default function QuestsPage() {
         </form>
       </Card>
 
-      {generatedQuests.length > 0 && (
+      {generationError && (
+         <Card className="max-w-2xl mx-auto mt-8 shadow-xl">
+          <CardHeader>
+            <CardTitle className="font-headline text-2xl text-destructive flex items-center">
+              <AlertTriangle className="mr-2 h-6 w-6"/> Error
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-destructive">{generationError}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!generationError && generatedQuests.length > 0 && (
         <Card className="max-w-2xl mx-auto mt-8 shadow-xl">
           <CardHeader>
             <CardTitle className="font-headline text-2xl">Generated Quests</CardTitle>
           </CardHeader>
           <CardContent>
-            {generatedQuests[0].startsWith("Failed to generate quests") ? (
-                 <div className="flex items-center p-4 bg-destructive/10 border border-destructive/30 rounded-md">
-                    <AlertTriangle className="h-6 w-6 text-destructive mr-3" />
-                    <p className="text-destructive">{generatedQuests[0]}</p>
-                </div>
-            ) : (
-            <ul className="space-y-3 list-decimal list-inside">
+            <ul className="space-y-4">
               {generatedQuests.map((quest, index) => (
-                <li key={index} className="p-3 bg-muted/50 rounded-md shadow-sm">
-                  {quest}
+                <li key={index} className="p-4 bg-muted/50 rounded-md shadow-sm border border-border">
+                  <strong className="text-sm text-muted-foreground">Question {index + 1} ({quest.type.replace('-', ' ')})</strong>
+                  <div className="mt-1">
+                    {renderQuestion(quest, index)}
+                  </div>
                 </li>
               ))}
             </ul>
-            )}
           </CardContent>
         </Card>
       )}
+       {!generationError && !isLoading && generatedQuests.length === 0 && form.formState.isSubmitted && (
+         <Card className="max-w-2xl mx-auto mt-8 shadow-xl">
+           <CardHeader>
+             <CardTitle className="font-headline text-xl">No Quests Yet</CardTitle>
+           </CardHeader>
+           <CardContent>
+             <p className="text-muted-foreground">Quests you generate will appear here. Fill out the form above and click "Generate Quests".</p>
+           </CardContent>
+         </Card>
+       )}
     </div>
   );
 }
