@@ -42,12 +42,12 @@ export type GenerateDynamicQuestsInput = z.infer<
 >;
 
 const OpenEndedQuestionSchema = z.object({
-  type: z.literal('open-ended'),
+  type: z.enum(['open-ended']).describe("The type of question, fixed to 'open-ended'."),
   question: z.string().describe('The open-ended question text.'),
 });
 
 const MultipleChoiceQuestionSchema = z.object({
-  type: z.literal('multiple-choice'),
+  type: z.enum(['multiple-choice']).describe("The type of question, fixed to 'multiple-choice'."),
   question: z.string().describe('The multiple-choice question text.'),
   options: z
     .array(z.string())
@@ -62,7 +62,7 @@ const MultipleChoiceQuestionSchema = z.object({
 });
 
 const FillInTheBlankQuestionSchema = z.object({
-  type: z.literal('fill-in-the-blank'),
+  type: z.enum(['fill-in-the-blank']).describe("The type of question, fixed to 'fill-in-the-blank'."),
   questionWithBlank: z
     .string()
     .describe(
@@ -73,7 +73,7 @@ const FillInTheBlankQuestionSchema = z.object({
     .describe('The word or phrase that correctly fills the blank.'),
 });
 
-// Remove 'export' from the schema constant
+// This schema is not exported directly
 const GeneratedQuestionSchema = z.discriminatedUnion('type', [
   OpenEndedQuestionSchema,
   MultipleChoiceQuestionSchema,
