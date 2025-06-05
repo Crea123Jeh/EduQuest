@@ -13,7 +13,7 @@ export function ZoneCard({ zone }: ZoneCardProps) {
   const IconComponent = zone.icon;
 
   return (
-    <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden rounded-lg">
+    <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 overflow-hidden rounded-lg">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-3 mb-2">
           {IconComponent && <IconComponent className="h-7 w-7 text-accent" />}

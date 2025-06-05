@@ -11,7 +11,7 @@ interface ClassroomCardProps {
 
 export function ClassroomCard({ classroom }: ClassroomCardProps) {
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+    <Card className="shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 rounded-lg">
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="font-headline text-xl">{classroom.name}</CardTitle>

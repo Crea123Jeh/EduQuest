@@ -90,7 +90,7 @@ export default function DashboardPage() {
         {activeQuests.length > 0 ? (
           <div className="space-y-4">
             {activeQuests.map(quest => (
-              <Card key={quest.id} className="hover:shadow-md transition-shadow">
+              <Card key={quest.id} className="hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-1">
                 <CardHeader>
                   <CardTitle className="text-lg">{quest.title}</CardTitle>
                   <CardDescription>{quest.description}</CardDescription>
