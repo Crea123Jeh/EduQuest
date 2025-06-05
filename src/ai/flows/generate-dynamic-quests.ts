@@ -73,7 +73,8 @@ const FillInTheBlankQuestionSchema = z.object({
     .describe('The word or phrase that correctly fills the blank.'),
 });
 
-export const GeneratedQuestionSchema = z.discriminatedUnion('type', [
+// Remove 'export' from the schema constant
+const GeneratedQuestionSchema = z.discriminatedUnion('type', [
   OpenEndedQuestionSchema,
   MultipleChoiceQuestionSchema,
   FillInTheBlankQuestionSchema,
