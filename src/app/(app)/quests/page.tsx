@@ -20,7 +20,7 @@ import { Loader2, Wand2, AlertTriangle, CheckCircle } from 'lucide-react';
 const questFormSchema = z.object({
   topic: z.string().min(3, { message: 'Topic must be at least 3 characters.' }),
   difficultyLevel: z.enum(['easy', 'medium', 'hard']),
-  numberOfQuestions: z.coerce.number().min(1).max(5), // Max 5 for better performance & LLM consistency
+  numberOfQuestions: z.coerce.number().min(1).max(10), 
   studentLearningHistory: z.string().optional(),
   questionType: z.enum(['open-ended', 'multiple-choice', 'fill-in-the-blank']),
 });
@@ -194,12 +194,12 @@ export default function QuestsPage() {
               </div>
             </div>
              <div>
-                <Label htmlFor="numberOfQuestions">Number of Questions (1-5)</Label>
+                <Label htmlFor="numberOfQuestions">Number of Questions (1-10)</Label>
                 <Input
                   id="numberOfQuestions"
                   type="number"
                   min="1"
-                  max="5"
+                  max="10"
                   {...form.register('numberOfQuestions')}
                 />
                 {form.formState.errors.numberOfQuestions && (

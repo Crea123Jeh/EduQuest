@@ -31,7 +31,7 @@ const GenerateDynamicQuestsInputSchema = z.object({
   difficultyLevel: z
     .enum(['easy', 'medium', 'hard'])
     .describe('The difficulty level of the questions.'),
-  numberOfQuestions: z.number().min(1).max(5).describe('The number of questions to generate (max 5).'),
+  numberOfQuestions: z.number().min(1).max(10).describe('The number of questions to generate (max 10).'),
   questionType: QuestionTypeSchema.describe(
     'The type of questions to generate.'
   ),
