@@ -18,7 +18,7 @@ interface UserSettings {
   emailNotifications: boolean;
   pushNotifications: boolean;
   soundEffects: boolean;
-  language: 'en' | 'id'; // Simplified for example
+  language: 'en' | 'id';
   dataSharing: boolean;
 }
 
@@ -96,40 +96,62 @@ export default function SettingsPage() {
     emailNotifications: true,
     pushNotifications: false,
     soundEffects: true,
-    language: 'en', // Default language
+    language: 'en', 
     dataSharing: true,
   });
 
   useEffect(() => {
     const savedSettings = localStorage.getItem('user-app-settings');
     if (savedSettings) {
-      const parsedSettings = JSON.parse(savedSettings);
-      // Ensure language is one of the allowed values, default to 'en' if not
-      if (parsedSettings.language && (parsedSettings.language === 'en' || parsedSettings.language === 'id')) {
-        setSettings(parsedSettings);
-      } else {
-        setSettings({ ...parsedSettings, language: 'en' });
+      try {
+        const parsedSettings = JSON.parse(savedSettings);
+        // Ensure language is one of the allowed values, default to 'en' if not
+        if (parsedSettings.language && (parsedSettings.language === 'en' || parsedSettings.language === 'id')) {
+          setSettings(prev => ({...prev, ...parsedSettings})); // Merge to keep defaults if some keys are missing
+        } else {
+          setSettings(prev => ({ ...prev, ...parsedSettings, language: 'en' }));
+        }
+      } catch (error) {
+        console.error("Failed to parse settings from localStorage", error);
+        // Stick to default settings if parsing fails
       }
     }
   }, []);
 
-  const handleSettingChange = (key: keyof Omit<UserSettings, 'language'>, value: boolean | string) => {
+  const handleSettingChange = (key: keyof Omit<UserSettings, 'language'>, value: boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleLanguageChange = (value: 'en' | 'id') => {
-    setSettings(prev => ({ ...prev, language: value }));
+  const handleLanguageChange = (newLanguage: 'en' | 'id') => {
+    setSettings(prevSettings => {
+      const updatedSettings = { ...prevSettings, language: newLanguage };
+      try {
+        localStorage.setItem('user-app-settings', JSON.stringify(updatedSettings));
+      } catch (error) {
+        console.error("Failed to save language to localStorage", error);
+      }
+      return updatedSettings;
+    });
   };
 
   const handleSaveChanges = async () => {
     setIsSaving(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
-    localStorage.setItem('user-app-settings', JSON.stringify(settings));
-    console.log("Non-theme settings saved:", settings);
-    toast({
-      title: currentTranslations.settingsUpdatedTitle,
-      description: currentTranslations.settingsUpdatedDescription,
-    });
+    try {
+      localStorage.setItem('user-app-settings', JSON.stringify(settings));
+      console.log("Settings saved via Save Changes button:", settings);
+      toast({
+        title: currentTranslations.settingsUpdatedTitle,
+        description: currentTranslations.settingsUpdatedDescription,
+      });
+    } catch (error) {
+       console.error("Failed to save settings to localStorage via Save Changes button", error);
+       toast({
+        title: "Error Saving Settings",
+        description: "Could not save your preferences. Please try again.",
+        variant: "destructive",
+      });
+    }
     setIsSaving(false);
   };
 
@@ -175,7 +197,7 @@ export default function SettingsPage() {
                   {currentTranslations.emailNotificationsDescription}
                 </span>
               </Label>
-              <Switch id="emailNotifications" checked={settings.emailNotifications} onCheckedChange={(val) => handleSettingChange('emailNotifications', val)} />
+              <Switch id="emailNotifications" checked={settings.emailNotifications} onCheckedChange={(val) => handleSettingChange('emailNotifications', val)} aria-label={currentTranslations.emailNotificationsLabel} />
             </div>
             <Separator />
             <div className="flex items-center justify-between">
@@ -185,7 +207,7 @@ export default function SettingsPage() {
                   {currentTranslations.pushNotificationsDescription}
                 </span>
               </Label>
-              <Switch id="pushNotifications" checked={settings.pushNotifications} onCheckedChange={(val) => handleSettingChange('pushNotifications', val)} />
+              <Switch id="pushNotifications" checked={settings.pushNotifications} onCheckedChange={(val) => handleSettingChange('pushNotifications', val)} aria-label={currentTranslations.pushNotificationsLabel} />
             </div>
           </CardContent>
         </Card>
@@ -202,7 +224,7 @@ export default function SettingsPage() {
                   {currentTranslations.darkModeDescription}
                 </span>
               </Label>
-              <Switch id="darkMode" checked={theme === 'dark'} onCheckedChange={toggleTheme} />
+              <Switch id="darkMode" checked={theme === 'dark'} onCheckedChange={toggleTheme} aria-label={currentTranslations.darkModeLabel} />
             </div>
              <Separator />
             <div className="flex items-center justify-between">
@@ -212,19 +234,18 @@ export default function SettingsPage() {
                   {currentTranslations.soundEffectsDescription}
                 </span>
               </Label>
-              <Switch id="soundEffects" checked={settings.soundEffects} onCheckedChange={(val) => handleSettingChange('soundEffects', val)} />
+              <Switch id="soundEffects" checked={settings.soundEffects} onCheckedChange={(val) => handleSettingChange('soundEffects', val)} aria-label={currentTranslations.soundEffectsLabel} />
             </div>
              <Separator />
              <div>
                 <Label htmlFor="language">{currentTranslations.languageLabel}</Label>
                 <Select value={settings.language} onValueChange={(val) => handleLanguageChange(val as 'en' | 'id')}>
-                  <SelectTrigger id="language" className="mt-1">
+                  <SelectTrigger id="language" className="mt-1" aria-label={currentTranslations.languageLabel}>
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English</SelectItem>
                     <SelectItem value="id">Bahasa Indonesia</SelectItem>
-                    {/* <SelectItem value="es">Español</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -243,7 +264,7 @@ export default function SettingsPage() {
                   {currentTranslations.dataSharingDescription}
                 </span>
               </Label>
-              <Switch id="dataSharing" checked={settings.dataSharing} onCheckedChange={(val) => handleSettingChange('dataSharing', val)} />
+              <Switch id="dataSharing" checked={settings.dataSharing} onCheckedChange={(val) => handleSettingChange('dataSharing', val)} aria-label={currentTranslations.dataSharingLabel} />
             </div>
             <Separator />
             <div>
@@ -265,4 +286,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
