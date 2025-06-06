@@ -1,14 +1,15 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Wand2, Puzzle, ArrowRightLeft, CheckCircle, XCircle, RotateCcw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Wand2, Puzzle, ArrowRightLeft, CheckCircle, XCircle, RotateCcw, Trash2, Coins, CircleDollarSign, Target } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 
 const questDetails = {
   id: 'm_q2',
@@ -24,87 +25,117 @@ const questDetails = {
 interface AlgorithmComponent {
   id: string;
   nameKey: string; // Key for translation
+  cost: number;
 }
 
+const MAX_BUDGET = 75;
+
 const ALL_COMPONENTS: AlgorithmComponent[] = [
-  { id: 'INIT', nameKey: 'compInit' },
-  { id: 'FETCH_USER', nameKey: 'compFetchUser' },
-  { id: 'AUTH_USER', nameKey: 'compAuthUser' },
-  { id: 'LOAD_SETTINGS', nameKey: 'compLoadSettings' }, // Distractor
-  { id: 'LOAD_DASH', nameKey: 'compLoadDash' },
-  { id: 'DISPLAY_ADS', nameKey: 'compDisplayAds' },     // Distractor
-  { id: 'RENDER_UI', nameKey: 'compRenderUi' },
-  { id: 'LOG_ERROR', nameKey: 'compLogError' },         // Distractor
-  { id: 'COMPLETE_SESSION', nameKey: 'compCompleteSession' },
-  { id: 'SEND_EMAIL', nameKey: 'compSendEmail' },       // Distractor
+  { id: 'INPUT_VALUE', nameKey: 'compInputValue', cost: 5 },
+  { id: 'VALIDATE_TYPE_NUMBER', nameKey: 'compValidateTypeNumber', cost: 10 },
+  { id: 'VALIDATE_TYPE_STRING', nameKey: 'compValidateTypeString', cost: 8 }, // Distractor, cheaper but wrong type
+  { id: 'CHECK_RANGE_POSITIVE', nameKey: 'compCheckRangePositive', cost: 15 },
+  { id: 'CHECK_RANGE_NEGATIVE', nameKey: 'compCheckRangeNegative', cost: 12 }, // Distractor
+  { id: 'PERFORM_SQUARE_OPERATION', nameKey: 'compPerformSquare', cost: 20 },
+  { id: 'PERFORM_ADD_TEN_OPERATION', nameKey: 'compPerformAddTen', cost: 10 }, // Distractor
+  { id: 'FORMAT_OUTPUT_SCIENTIFIC', nameKey: 'compFormatScientific', cost: 10 },
+  { id: 'FORMAT_OUTPUT_FIXED_DECIMAL', nameKey: 'compFormatFixed', cost: 7 }, // Distractor
+  { id: 'SEND_TO_LOG', nameKey: 'compSendToLog', cost: 5 },
+  { id: 'DISPLAY_RESULT', nameKey: 'compDisplayResult', cost: 5 },
+  { id: 'TERMINATE_PROCESS', nameKey: 'compTerminateProcess', cost: 2 },
 ];
 
-const CORRECT_SEQUENCE_IDS: string[] = ['INIT', 'FETCH_USER', 'AUTH_USER', 'LOAD_DASH', 'RENDER_UI', 'COMPLETE_SESSION'];
+const CORRECT_SEQUENCE_IDS: string[] = [
+    'INPUT_VALUE', 
+    'VALIDATE_TYPE_NUMBER', 
+    'CHECK_RANGE_POSITIVE', 
+    'PERFORM_SQUARE_OPERATION', 
+    'FORMAT_OUTPUT_SCIENTIFIC', 
+    'DISPLAY_RESULT', 
+    'SEND_TO_LOG', 
+    'TERMINATE_PROCESS'
+];
 
 const pageTranslations = {
   en: {
-    questTitle: "Broken Bridge: The Algorithm Assembly",
-    questDescription: "Repair a vital data bridge by correctly assembling algorithmic components. One wrong piece could corrupt the entire network!",
+    questTitle: "Algorithm Assembly Challenge: Precision Protocol",
+    questDescription: "Construct a precise data validation and calculation protocol. Each component has a computational cost. Assemble the correct sequence within the given budget to succeed!",
     zoneName: "Mathematics Realm",
     backToZone: "Back to Mathematics Realm",
-    gameAreaTitle: "Algorithm Assembly Console",
-    componentToolboxTitle: "Component Toolbox",
-    assemblyLineTitle: "Current Assembly Line (Click to remove)",
-    assembleButton: "Assemble Algorithm",
-    assemblingButton: "Assembling...",
+    gameAreaTitle: "Protocol Assembly Console",
+    componentToolboxTitle: "Component Toolbox (Name - Cost)",
+    assemblyLineTitle: "Current Protocol Assembly (Click to remove)",
+    assembleButton: "Execute Protocol",
+    assemblingButton: "Executing...",
     clearAssemblyButton: "Clear Assembly",
-    feedbackSuccess: "Bridge Repaired! Data flow restored. Excellent work, Engineer!",
-    feedbackFailure: (correctCount: number, totalCorrect: number) => `Assembly Incorrect. ${correctCount}/${totalCorrect} components in the right order. The data bridge remains unstable. Try again!`,
+    feedbackSuccess: "Protocol Executed Successfully! Data processed accurately and within budget.",
+    feedbackFailureOrder: (correctCount: number, totalCorrect: number) => `Sequence Incorrect. ${correctCount}/${totalCorrect} components in the right order. Protocol unstable. Try again!`,
+    feedbackFailureBudget: (cost: number, budget: number) => `Budget Exceeded! Protocol cost (${cost}) is over budget (${budget}). Optimize your components.`,
+    feedbackFailureOrderAndBudget: (correctCount: number, totalCorrect: number, cost: number, budget: number) => `Sequence Incorrect (${correctCount}/${totalCorrect} correct) AND Budget Exceeded (Cost: ${cost} > Budget: ${budget}). Critical failure!`,
     feedbackEmpty: "Assembly line is empty. Add components from the toolbox.",
     statusTitle: "Assembly Status",
-    initialStatus: "Drag components or click to add to the assembly line below.",
+    initialStatus: "Drag components or click to add to the assembly line. Mind the budget!",
     restartButton: "Restart Assembly",
-    claimRewardButton: "Finalize Bridge Report",
-    toastRewardTitle: "Bridge Report Filed!",
-    toastRewardDescription: (points: number) => `You earned ${points} points for successfully repairing the data bridge!`,
+    claimRewardButton: "Finalize Protocol Report",
+    toastRewardTitle: "Protocol Report Filed!",
+    toastRewardDescription: (points: number) => `You earned ${points} points for successfully designing the protocol!`,
+    costLabel: "Cost",
+    totalCostLabel: "Total Cost:",
+    budgetLabel: "Budget:",
+    remainingBudgetLabel: "Remaining:",
     // Component Names
-    compInit: "Initialize Data Stream",
-    compFetchUser: "Fetch User Profile",
-    compAuthUser: "Authenticate User",
-    compLoadSettings: "Load User Settings",
-    compLoadDash: "Load Dashboard Data",
-    compDisplayAds: "Display Advertisements",
-    compRenderUi: "Render User Interface",
-    compLogError: "Log Background Error",
-    compCompleteSession: "Finalize Session",
-    compSendEmail: "Send Welcome Email",
+    compInputValue: "Receive Input Data",
+    compValidateTypeNumber: "Check: Is Numeric?",
+    compValidateTypeString: "Check: Is Text?",
+    compCheckRangePositive: "Check: Is Positive Number?",
+    compCheckRangeNegative: "Check: Is Negative Number?",
+    compPerformSquare: "Calculate: Square of Input",
+    compPerformAddTen: "Calculate: Add 10 to Input",
+    compFormatScientific: "Format Output: Scientific Notation",
+    compFormatFixed: "Format Output: Fixed Decimal",
+    compSendToLog: "Log: Send to System Log",
+    compDisplayResult: "Output: Display Result",
+    compTerminateProcess: "End: Terminate Process",
   },
   id: {
-    questTitle: "Jembatan Rusak: Perakitan Algoritma",
-    questDescription: "Perbaiki jembatan data vital dengan merakit komponen algoritma dengan benar. Satu bagian salah dapat merusak seluruh jaringan!",
+    questTitle: "Tantangan Perakitan Algoritma: Protokol Presisi",
+    questDescription: "Susun protokol validasi dan kalkulasi data yang presisi. Setiap komponen memiliki biaya komputasi. Susun urutan yang benar sesuai anggaran yang diberikan untuk berhasil!",
     zoneName: "Dunia Matematika",
     backToZone: "Kembali ke Dunia Matematika",
-    gameAreaTitle: "Konsol Perakitan Algoritma",
-    componentToolboxTitle: "Kotak Alat Komponen",
-    assemblyLineTitle: "Baris Perakitan Saat Ini (Klik untuk menghapus)",
-    assembleButton: "Rakit Algoritma",
-    assemblingButton: "Merakit...",
-    clearAssemblyButton: "Kosongkan Perakitan",
-    feedbackSuccess: "Jembatan Diperbaiki! Aliran data dipulihkan. Kerja bagus, Insinyur!",
-    feedbackFailure: (correctCount: number, totalCorrect: number) => `Perakitan Salah. ${correctCount}/${totalCorrect} komponen dalam urutan yang benar. Jembatan data masih tidak stabil. Coba lagi!`,
+    gameAreaTitle: "Konsol Perakitan Protokol",
+    componentToolboxTitle: "Kotak Alat Komponen (Nama - Biaya)",
+    assemblyLineTitle: "Susunan Protokol Saat Ini (Klik untuk menghapus)",
+    assembleButton: "Jalankan Protokol",
+    assemblingButton: "Menjalankan...",
+    clearAssemblyButton: "Kosongkan Susunan",
+    feedbackSuccess: "Protokol Berhasil Dijalankan! Data diproses secara akurat dan sesuai anggaran.",
+    feedbackFailureOrder: (correctCount: number, totalCorrect: number) => `Urutan Salah. ${correctCount}/${totalCorrect} komponen dalam urutan yang benar. Protokol tidak stabil. Coba lagi!`,
+    feedbackFailureBudget: (cost: number, budget: number) => `Anggaran Terlampaui! Biaya protokol (${cost}) melebihi anggaran (${budget}). Optimalkan komponen Anda.`,
+    feedbackFailureOrderAndBudget: (correctCount: number, totalCorrect: number, cost: number, budget: number) => `Urutan Salah (${correctCount}/${totalCorrect} benar) DAN Anggaran Terlampaui (Biaya: ${cost} > Anggaran: ${budget}). Kegagalan kritis!`,
     feedbackEmpty: "Baris perakitan kosong. Tambahkan komponen dari kotak alat.",
     statusTitle: "Status Perakitan",
-    initialStatus: "Seret komponen atau klik untuk menambahkan ke baris perakitan di bawah.",
+    initialStatus: "Seret komponen atau klik untuk menambahkan ke baris perakitan. Perhatikan anggaran!",
     restartButton: "Ulangi Perakitan",
-    claimRewardButton: "Finalisasi Laporan Jembatan",
-    toastRewardTitle: "Laporan Jembatan Diajukan!",
-    toastRewardDescription: (points: number) => `Anda mendapatkan ${points} poin karena berhasil memperbaiki jembatan data!`,
+    claimRewardButton: "Finalisasi Laporan Protokol",
+    toastRewardTitle: "Laporan Protokol Diajukan!",
+    toastRewardDescription: (points: number) => `Anda mendapatkan ${points} poin karena berhasil merancang protokol!`,
+    costLabel: "Biaya",
+    totalCostLabel: "Total Biaya:",
+    budgetLabel: "Anggaran:",
+    remainingBudgetLabel: "Sisa:",
     // Component Names
-    compInit: "Inisialisasi Aliran Data",
-    compFetchUser: "Ambil Profil Pengguna",
-    compAuthUser: "Autentikasi Pengguna",
-    compLoadSettings: "Muat Pengaturan Pengguna",
-    compLoadDash: "Muat Data Dasbor",
-    compDisplayAds: "Tampilkan Iklan",
-    compRenderUi: "Render Antarmuka Pengguna",
-    compLogError: "Catat Kesalahan Latar Belakang",
-    compCompleteSession: "Finalisasi Sesi",
-    compSendEmail: "Kirim Email Selamat Datang",
+    compInputValue: "Terima Data Input",
+    compValidateTypeNumber: "Periksa: Apakah Numerik?",
+    compValidateTypeString: "Periksa: Apakah Teks?",
+    compCheckRangePositive: "Periksa: Apakah Bilangan Positif?",
+    compCheckRangeNegative: "Periksa: Apakah Bilangan Negatif?",
+    compPerformSquare: "Hitung: Kuadrat dari Input",
+    compPerformAddTen: "Hitung: Tambah 10 ke Input",
+    compFormatScientific: "Format Output: Notasi Ilmiah",
+    compFormatFixed: "Format Output: Desimal Tetap",
+    compSendToLog: "Log: Kirim ke Log Sistem",
+    compDisplayResult: "Output: Tampilkan Hasil",
+    compTerminateProcess: "Selesai: Hentikan Proses",
   }
 };
 
@@ -116,6 +147,10 @@ export default function BrokenBridgeQuestPage() {
   const [isAssembling, setIsAssembling] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string>('');
   const [questOutcome, setQuestOutcome] = useState<'pending' | 'success' | 'failure'>('pending');
+  
+  const currentCost = useMemo(() => {
+    return assembledSequence.reduce((sum, comp) => sum + comp.cost, 0);
+  }, [assembledSequence]);
 
   useEffect(() => {
     const updateLang = () => {
@@ -156,9 +191,9 @@ export default function BrokenBridgeQuestPage() {
   }));
 
   const handleAddComponent = (component: AlgorithmComponent) => {
-    if (questOutcome === 'success') return; // Don't allow changes after success
+    if (questOutcome === 'success') return; 
     setAssembledSequence(prev => [...prev, component]);
-    setFeedbackMessage(t.initialStatus); // Reset feedback on new component add
+    setFeedbackMessage(t.initialStatus); 
     setQuestOutcome('pending');
   };
 
@@ -185,38 +220,29 @@ export default function BrokenBridgeQuestPage() {
 
     setTimeout(() => {
       const assembledIds = assembledSequence.map(c => c.id);
-      let correctCount = 0;
-      for (let i = 0; i < CORRECT_SEQUENCE_IDS.length; i++) {
-        if (i < assembledIds.length && assembledIds[i] === CORRECT_SEQUENCE_IDS[i]) {
-          correctCount++;
+      let correctInOrderCount = 0;
+      for (let i = 0; i < Math.min(assembledIds.length, CORRECT_SEQUENCE_IDS.length); i++) {
+        if (assembledIds[i] === CORRECT_SEQUENCE_IDS[i]) {
+          correctInOrderCount++;
         } else {
-          // If even one is wrong in sequence, or sequence is too short
-          if (assembledIds.length !== CORRECT_SEQUENCE_IDS.length || assembledIds[i] !== CORRECT_SEQUENCE_IDS[i]) {
-             // Stop counting further correct items if order is broken or length mismatch
-            if (assembledIds.length === CORRECT_SEQUENCE_IDS.length && correctCount === CORRECT_SEQUENCE_IDS.length){
-                 // This case should not be hit if logic is correct, but as a safeguard
-            } else {
-                // If sequence is not perfect, break from counting more correct items unless it's a prefix match
-                if (assembledIds[i] !== CORRECT_SEQUENCE_IDS[i] && i < assembledIds.length) break;
-            }
-          }
+          break; 
         }
       }
       
-      if (correctCount === CORRECT_SEQUENCE_IDS.length && assembledIds.length === CORRECT_SEQUENCE_IDS.length) {
+      const isSequenceCorrect = correctInOrderCount === CORRECT_SEQUENCE_IDS.length && assembledIds.length === CORRECT_SEQUENCE_IDS.length;
+      const isWithinBudget = currentCost <= MAX_BUDGET;
+
+      if (isSequenceCorrect && isWithinBudget) {
         setFeedbackMessage(t.feedbackSuccess);
         setQuestOutcome('success');
       } else {
-        // Provide more specific feedback about how many were correct IN ORDER from the start
-        let prefixCorrectCount = 0;
-        for(let i=0; i < Math.min(assembledIds.length, CORRECT_SEQUENCE_IDS.length); i++){
-            if(assembledIds[i] === CORRECT_SEQUENCE_IDS[i]){
-                prefixCorrectCount++;
-            } else {
-                break;
-            }
+        if (!isSequenceCorrect && !isWithinBudget) {
+            setFeedbackMessage(t.feedbackFailureOrderAndBudget(correctInOrderCount, CORRECT_SEQUENCE_IDS.length, currentCost, MAX_BUDGET));
+        } else if (!isSequenceCorrect) {
+            setFeedbackMessage(t.feedbackFailureOrder(correctInOrderCount, CORRECT_SEQUENCE_IDS.length));
+        } else { // !isWithinBudget
+            setFeedbackMessage(t.feedbackFailureBudget(currentCost, MAX_BUDGET));
         }
-        setFeedbackMessage(t.feedbackFailure(prefixCorrectCount, CORRECT_SEQUENCE_IDS.length));
         setQuestOutcome('failure');
       }
       setIsAssembling(false);
@@ -232,8 +258,10 @@ export default function BrokenBridgeQuestPage() {
       title: t.toastRewardTitle,
       description: t.toastRewardDescription(questDetails.points),
     });
-    // Potentially navigate away or lock the game
   };
+  
+  const remainingBudget = MAX_BUDGET - currentCost;
+  const budgetProgress = (remainingBudget / MAX_BUDGET) * 100;
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
@@ -261,16 +289,17 @@ export default function BrokenBridgeQuestPage() {
           <CardHeader>
             <CardTitle className="text-lg">{t.componentToolboxTitle}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-2 max-h-[60vh] overflow-y-auto">
             {translatedComponents.map((comp) => (
               <Button
                 key={comp.id}
                 variant="outline"
-                className="w-full justify-start text-left"
+                className="w-full justify-between text-left h-auto py-2"
                 onClick={() => handleAddComponent(comp)}
                 disabled={isAssembling || questOutcome === 'success'}
               >
-                {comp.name}
+                <span>{comp.name}</span>
+                <Badge variant="secondary">{comp.cost} {t.costLabel}</Badge>
               </Button>
             ))}
           </CardContent>
@@ -284,6 +313,17 @@ export default function BrokenBridgeQuestPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            <Card className="p-4 bg-muted/30">
+                <div className="flex justify-between items-center mb-1">
+                    <Label className="text-sm font-medium text-muted-foreground">{t.budgetLabel} <span className="text-primary font-bold">{MAX_BUDGET}</span></Label>
+                    <Label className="text-sm font-medium text-muted-foreground">{t.totalCostLabel} <span className={`font-bold ${currentCost > MAX_BUDGET ? 'text-destructive' : 'text-primary'}`}>{currentCost}</span></Label>
+                </div>
+                <Progress value={currentCost <= MAX_BUDGET ? budgetProgress : 0} 
+                    indicatorClassName={currentCost > MAX_BUDGET ? "bg-destructive" : "bg-primary"}
+                    className="h-2"/>
+                {currentCost > MAX_BUDGET && <p className="text-xs text-destructive text-right mt-1">{t.feedbackFailureBudget(currentCost, MAX_BUDGET)}</p>}
+            </Card>
+
             <div>
               <Label className="text-base font-semibold">{t.assemblyLineTitle}</Label>
               <div className="mt-2 p-4 min-h-[120px] bg-muted/50 rounded-md border border-dashed flex flex-wrap gap-2 items-start">
@@ -298,7 +338,7 @@ export default function BrokenBridgeQuestPage() {
                       onClick={() => handleRemoveComponent(index)}
                       title={`Remove ${t[comp.nameKey as keyof typeof t] || comp.nameKey}`}
                     >
-                      {t[comp.nameKey as keyof typeof t] || comp.nameKey}
+                      {t[comp.nameKey as keyof typeof t] || comp.nameKey} ({comp.cost} {t.costLabel})
                       <XCircle className="ml-2 h-3 w-3 opacity-70" />
                     </Badge>
                   ))
@@ -318,7 +358,7 @@ export default function BrokenBridgeQuestPage() {
               </Button>
               <Button 
                 onClick={handleAssemble} 
-                disabled={isAssembling || assembledSequence.length === 0 || questOutcome === 'success'} 
+                disabled={isAssembling || assembledSequence.length === 0 || questOutcome === 'success' || currentCost > MAX_BUDGET} 
                 className="flex-1"
               >
                 <ArrowRightLeft className="mr-2 h-4 w-4" />
