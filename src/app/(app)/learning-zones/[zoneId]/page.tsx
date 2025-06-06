@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { LearningZone, Quest } from '@/types';
-import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, Beaker, type LucideIcon } from 'lucide-react';
 import { useState, useEffect, use } from 'react';
 
 const iconMap: Record<string, LucideIcon> = {
@@ -24,11 +24,11 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
-  { 
-    id: 'history', name: 'History Zone: Time Travelers\' Guild HQ', 
-    description: 'Welcome, Time Agent! Your mission, should you choose to accept it, involves navigating pivotal moments in history. From decoding ancient scrolls in Egypt to strategizing D-Day landings, your choices will shape the past (or at least your grade!). Watch out for temporal paradoxes!', 
-    iconKey: 'History', subject: 'History', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'history', name: 'History Zone: Time Travelers\' Guild HQ',
+    description: 'Welcome, Time Agent! Your mission, should you choose to accept it, involves navigating pivotal moments in history. From decoding ancient scrolls in Egypt to strategizing D-Day landings, your choices will shape the past (or at least your grade!). Watch out for temporal paradoxes!',
+    iconKey: 'History', subject: 'History',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'ancient library time portal',
     quests: [
       { id: 'h_q1', title: 'The Pharaoh\'s Lost Scepter', description: 'Navigate booby-trapped pyramids and decipher hieroglyphs to find the legendary scepter before rival explorers!', zoneId: 'history', type: 'Individual', difficulty: 'Medium', points: 120 },
@@ -36,11 +36,11 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
       { id: 'h_q3', title: 'Ethical Dilemma: The Revolutionary\'s Choice', description: 'You\'ve uncovered a plot that could change a nation. Expose it and risk chaos, or stay silent and maintain order? The fate of many rests on your decision.', zoneId: 'history', type: 'Ethical Dilemma', difficulty: 'Hard', points: 100 },
     ]
   },
-  { 
-    id: 'math', name: 'Mathematics Realm: The Number Ninjas\' Citadel', 
-    description: 'Master the art of calculation and logic in this high-tech dojo. Solve cryptic numerical puzzles, duel with equation-wielding robots, and prove your worth as a true Number Ninja. Only the sharpest minds will prevail!', 
-    iconKey: 'Calculator', subject: 'Mathematics', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'math', name: 'Mathematics Realm: The Number Ninjas\' Citadel',
+    description: 'Master the art of calculation and logic in this high-tech dojo. Solve cryptic numerical puzzles, duel with equation-wielding robots, and prove your worth as a true Number Ninja. Only the sharpest minds will prevail!',
+    iconKey: 'Calculator', subject: 'Mathematics',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'futuristic dojo numbers',
     quests: [
       { id: 'm_q1', title: 'Fractal Fortress Defense', description: 'Design and deploy fractal patterns to defend the Citadel from rogue data streams. The more complex, the stronger your shield!', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
@@ -48,11 +48,11 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
       { id: 'm_q3', title: 'The Infinite Labyrinth of Pi', description: 'Navigate a maze where each turn is decided by a digit of Pi. How far can you go before getting lost in infinity?', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 170 },
     ]
   },
-   { 
-    id: 'science', name: 'Science Lab: The Mad Scientist\'s Playground', 
-    description: 'Don your lab coat and goggles! Here, you\'ll concoct explosive potions (safely!), build bizarre contraptions, and maybe even reanimate a friendly creature or two. Expect the unexpected, and remember: it\'s not a mistake, it\'s a discovery!', 
-    iconKey: 'FlaskConical', subject: 'Science', 
-    image: 'https://placehold.co/1200x400.png', 
+   {
+    id: 'science', name: 'Science Lab: The Mad Scientist\'s Playground',
+    description: 'Don your lab coat and goggles! Here, you\'ll concoct explosive potions (safely!), build bizarre contraptions, and maybe even reanimate a friendly creature or two. Expect the unexpected, and remember: it\'s not a mistake, it\'s a discovery!',
+    iconKey: 'FlaskConical', subject: 'Science',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'quirky science lab',
     quests: [
       { id: 's_q1', title: 'Creature Feature: Build-A-Beast', description: 'Combine DNA samples to design and nurture your own unique creature. Will it be cute, cuddly, or catastrophically chaotic?', zoneId: 'science', type: 'Individual', difficulty: 'Medium', points: 130 },
@@ -60,71 +60,71 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
       { id: 's_q3', title: 'Rocket Launch: To the Mun and Back!', description: 'Design, build, and launch a miniature rocket. Calculate trajectories and fuel consumption to land safely on the class "Mun".', zoneId: 'science', type: 'Individual', difficulty: 'Medium', points: 150 },
     ]
   },
-  { 
-    id: 'geography', name: 'World Explorer: The Cartographer\'s Compass HQ', 
-    description: 'Grab your compass and map! Explore dense jungles, navigate vast oceans, and scale towering mountains. Discover ancient ruins and document unique cultures. Adventure awaits at every coordinate!', 
-    iconKey: 'Globe', subject: 'Geography', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'geography', name: 'World Explorer: The Cartographer\'s Compass HQ',
+    description: 'Grab your compass and map! Explore dense jungles, navigate vast oceans, and scale towering mountains. Discover ancient ruins and document unique cultures. Adventure awaits at every coordinate!',
+    iconKey: 'Globe', subject: 'Geography',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'explorer map jungle',
     quests: [
       { id: 'g_q1', title: 'The Lost City of El Dorado', description: 'Follow ancient clues to find the legendary city of gold. Beware of treacherous terrain and rival explorers!', zoneId: 'geography', type: 'Individual', difficulty: 'Hard', points: 200 },
     ]
   },
-  { 
-    id: 'art', name: 'Art Studio: The Dream Weaver\'s Workshop', 
-    description: 'Your imagination is the only limit! Sculpt mythical beasts from digital clay, paint vibrant murals on virtual walls, or animate epic tales. Let your creativity flow and inspire the world!', 
-    iconKey: 'Palette', subject: 'Art', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'art', name: 'Art Studio: The Dream Weaver\'s Workshop',
+    description: 'Your imagination is the only limit! Sculpt mythical beasts from digital clay, paint vibrant murals on virtual walls, or animate epic tales. Let your creativity flow and inspire the world!',
+    iconKey: 'Palette', subject: 'Art',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'fantasy art tools',
     quests: [
       { id: 'a_q1', title: 'Mural of Myths', description: 'Collaborate to create a massive digital mural depicting legendary creatures and epic battles.', zoneId: 'art', type: 'Collaborative', difficulty: 'Medium', points: 160 },
     ]
   },
-  { 
-    id: 'music', name: 'Music Hall: The Maestro\'s Grand Stage', 
-    description: 'Compose chart-topping hits, conduct virtual orchestras, or master exotic instruments. From classical symphonies to futuristic synth-scapes, the stage is yours!', 
-    iconKey: 'Music', subject: 'Music', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'music', name: 'Music Hall: The Maestro\'s Grand Stage',
+    description: 'Compose chart-topping hits, conduct virtual orchestras, or master exotic instruments. From classical symphonies to futuristic synth-scapes, the stage is yours!',
+    iconKey: 'Music', subject: 'Music',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'futuristic music stage',
     quests: [
        { id: 'mu_q1', title: 'Symphony of the Stars', description: 'Compose an original piece of music inspired by the cosmos. Use unique sound effects to represent planets and nebulae.', zoneId: 'music', type: 'Individual', difficulty: 'Hard', points: 180 },
     ]
   },
-  { 
-    id: 'languages', name: 'Language Hub: The Polyglot\'s Portal Chamber', 
-    description: 'Step through portals to converse with historical figures, negotiate with alien diplomats, or decipher ancient texts. Master new tongues and unlock global secrets!', 
-    iconKey: 'Languages', subject: 'Languages', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'languages', name: 'Language Hub: The Polyglot\'s Portal Chamber',
+    description: 'Step through portals to converse with historical figures, negotiate with alien diplomats, or decipher ancient texts. Master new tongues and unlock global secrets!',
+    iconKey: 'Languages', subject: 'Languages',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'glowing language portal',
     quests: [
        { id: 'l_q1', title: 'The Rosetta Stone Riddle', description: 'Translate a series of cryptic messages in three different ancient languages to unlock a hidden treasure.', zoneId: 'languages', type: 'Individual', difficulty: 'Hard', points: 190 },
     ]
   },
-  { 
-    id: 'technology', name: 'Tech Hub: Future Innovators\' Command Center', 
-    description: 'Code AI assistants, design smart cities, or defend against cyber threats in this high-tech sandbox. The future is in your hands – build it, break it, and rebuild it better!', 
-    iconKey: 'Rocket', subject: 'Technology', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'technology', name: 'Tech Hub: Future Innovators\' Command Center',
+    description: 'Code AI assistants, design smart cities, or defend against cyber threats in this high-tech sandbox. The future is in your hands – build it, break it, and rebuild it better!',
+    iconKey: 'Rocket', subject: 'Technology',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'holographic tech interface',
     quests: [
        { id: 't_q1', title: 'AI Uprising: Code Red', description: 'A rogue AI is causing chaos! Collaborate to debug its code and restore order before it takes over the network.', zoneId: 'technology', type: 'Collaborative', difficulty: 'Hard', points: 220 },
     ]
   },
-  { 
-    id: 'physics', name: 'Physics Playground: Quantum Leap Lab Complex', 
-    description: 'Defy gravity, bend light, and explore the bizarre world of quantum mechanics. Conduct experiments that would make Einstein jealous, but try not to create any black holes in the classroom!', 
-    iconKey: 'Atom', subject: 'Physics', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'physics', name: 'Physics Playground: Quantum Leap Lab Complex',
+    description: 'Defy gravity, bend light, and explore the bizarre world of quantum mechanics. Conduct experiments that would make Einstein jealous, but try not to create any black holes in the classroom!',
+    iconKey: 'Atom', subject: 'Physics',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'anti gravity chamber',
     quests: [
        { id: 'p_q1', title: 'The Wormhole Wobble', description: 'Stabilize a miniature wormhole by correctly applying principles of general relativity. Get it wrong, and who knows where you\'ll end up!', zoneId: 'physics', type: 'Individual', difficulty: 'Hard', points: 210 },
     ]
   },
-  { 
-    id: 'psychology', name: 'Mind Maze: The Empathy Engine Labyrinth', 
-    description: 'Navigate intricate social scenarios, understand diverse perspectives, and master the art of emotional intelligence. Can you solve the human puzzle?', 
-    iconKey: 'BrainCog', subject: 'Psychology', 
-    image: 'https://placehold.co/1200x400.png', 
+  {
+    id: 'psychology', name: 'Mind Maze: The Empathy Engine Labyrinth',
+    description: 'Navigate intricate social scenarios, understand diverse perspectives, and master the art of emotional intelligence. Can you solve the human puzzle?',
+    iconKey: 'BrainCog', subject: 'Psychology',
+    image: 'https://placehold.co/1200x400.png',
     aiHint: 'surreal brain landscape',
     quests: [
        { id: 'ps_q1', title: 'The Empathy Test', description: 'Experience a day in someone else\'s shoes through an advanced simulation. Make choices that demonstrate understanding and compassion to pass.', zoneId: 'psychology', type: 'Individual', difficulty: 'Medium', points: 140 },
@@ -149,7 +149,11 @@ const pageTranslations = {
     collaborationDoorsDesc: "Two or more students must solve related puzzles or perform actions simultaneously to unlock the path forward. Communication is key!",
     brokenBridges: "Broken Bridges",
     brokenBridgesDesc: "The path is blocked! Team members might need to sacrifice points, share resources, or solve a collective mini-game for the group to cross.",
-    mechanicsDescription: "Many quests in {zoneName} feature unique collaborative challenges like <span class=\"font-semibold text-accent\">Collaboration Doors</span> (requiring synchronized answers or actions) and <span class=\"font-semibold text-accent\">Broken Bridges</span> (demanding teamwork, resource sharing, or even point sacrifices for the greater good). These are designed to foster empathy, communication, and collective problem-solving."
+    mechanicsDescription: "Many quests in {zoneName} feature unique collaborative challenges like <span class=\"font-semibold text-accent\">Collaboration Doors</span> (requiring synchronized answers or actions) and <span class=\"font-semibold text-accent\">Broken Bridges</span> (demanding teamwork, resource sharing, or even point sacrifices for the greater good). These are designed to foster empathy, communication, and collective problem-solving.",
+    featuredExperimentTitle: "Featured Experiment",
+    featuredExperimentAlt: "Volcano experiment illustration",
+    featuredExperimentName: "The Baking Soda Volcano",
+    featuredExperimentDescription: "A classic and fun experiment demonstrating chemical reactions! Mix household items to create your own erupting volcano. Learn about acids, bases, and gas production."
   },
   id: {
     backToZones: "Kembali ke Semua Zona",
@@ -162,7 +166,11 @@ const pageTranslations = {
     collaborationDoorsDesc: "Dua siswa atau lebih harus memecahkan teka-teki terkait atau melakukan tindakan secara bersamaan untuk membuka jalan ke depan. Komunikasi adalah kunci!",
     brokenBridges: "Jembatan Rusak",
     brokenBridgesDesc: "Jalan terhalang! Anggota tim mungkin perlu mengorbankan poin, berbagi sumber daya, atau menyelesaikan mini-game kolektif agar grup dapat menyeberang.",
-    mechanicsDescription: "Banyak misi di {zoneName} menampilkan tantangan kolaboratif unik seperti <span class=\"font-semibold text-accent\">Pintu Kolaborasi</span> (membutuhkan jawaban atau tindakan yang disinkronkan) dan <span class=\"font-semibold text-accent\">Jembatan Rusak</span> (menuntut kerja sama tim, berbagi sumber daya, atau bahkan pengorbanan poin untuk kebaikan yang lebih besar). Ini dirancang untuk menumbuhkan empati, komunikasi, dan pemecahan masalah kolektif."
+    mechanicsDescription: "Banyak misi di {zoneName} menampilkan tantangan kolaboratif unik seperti <span class=\"font-semibold text-accent\">Pintu Kolaborasi</span> (membutuhkan jawaban atau tindakan yang disinkronkan) dan <span class=\"font-semibold text-accent\">Jembatan Rusak</span> (menuntut kerja sama tim, berbagi sumber daya, atau bahkan pengorbanan poin untuk kebaikan yang lebih besar). Ini dirancang untuk menumbuhkan empati, komunikasi, dan pemecahan masalah kolektif.",
+    featuredExperimentTitle: "Eksperimen Unggulan",
+    featuredExperimentAlt: "Ilustrasi eksperimen gunung berapi",
+    featuredExperimentName: "Gunung Berapi Soda Kue",
+    featuredExperimentDescription: "Eksperimen klasik dan menyenangkan yang menunjukkan reaksi kimia! Campurkan bahan-bahan rumah tangga untuk membuat gunung berapi meletus Anda sendiri. Pelajari tentang asam, basa, dan produksi gas."
   }
 };
 
@@ -272,7 +280,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
         )}
       </section>
 
-      <section>
+      <section className="mb-12">
         <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
           <Users className="mr-3 h-7 w-7 text-accent" />
           {t.zoneMechanics}
@@ -299,8 +307,33 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
           </CardContent>
         </Card>
       </section>
+
+      {zone.id === 'science' && (
+        <section className="mt-12">
+          <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
+            <Beaker className="mr-3 h-7 w-7 text-accent" />
+            {t.featuredExperimentTitle}
+          </h2>
+          <Card className="shadow-md rounded-lg">
+            <CardContent className="pt-6 flex flex-col md:flex-row items-center gap-6">
+              <Image
+                src="https://placehold.co/300x200.png"
+                alt={t.featuredExperimentAlt}
+                width={300}
+                height={200}
+                className="rounded-md object-cover"
+                data-ai-hint="science experiment volcano"
+              />
+              <div>
+                <h3 className="font-semibold text-lg mb-2 text-card-foreground">{t.featuredExperimentName}</h3>
+                <p className="text-muted-foreground">
+                  {t.featuredExperimentDescription}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      )}
     </div>
   );
 }
-
-    
