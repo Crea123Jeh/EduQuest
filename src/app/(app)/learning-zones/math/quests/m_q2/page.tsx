@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Wand2, Puzzle, ArrowRightLeft, CheckCircle, XCircle, RotateCcw, Trash2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 const questDetails = {
   id: 'm_q2',
