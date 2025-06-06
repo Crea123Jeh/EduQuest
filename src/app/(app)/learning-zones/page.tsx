@@ -60,7 +60,7 @@ const allLearningZones: LearningZone[] = [
     iconKey: 'Music', 
     subject: 'Music', 
     image: 'https://placehold.co/400x250.png', 
-    aiHint: 'grand concert hall' 
+    aiHint: 'grand concert hall'  // or 'futuristic music stage'
   },
   { 
     id: 'languages', 
@@ -167,3 +167,4 @@ export default function LearningZonesPage() {
     </div>
   );
 }
+

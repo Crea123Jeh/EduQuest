@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import type { LearningZone, Quest } from '@/types';
 import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, Beaker, Lightbulb, type LucideIcon } from 'lucide-react';
-import { use, useState, useEffect } from 'react'; // Added React.use here
+import { use, useState, useEffect } from 'react';
 
 const iconMap: Record<string, LucideIcon> = {
   History,
@@ -108,7 +108,7 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     aiHint: 'holographic tech interface',
     quests: [
        { id: 't_q1', title: 'AI Uprising: Code Red', description: 'A rogue AI is causing system-wide anomalies! Identify the correct debug action for each reported issue to restore system integrity before it\'s too late.', zoneId: 'technology', type: 'Collaborative', difficulty: 'Hard', points: 220 },
-       { id: 't_q2', title: 'Cybersecurity: Firewall Configuration', description: 'Malicious packets are trying to infiltrate the network! Configure firewall rules to block threats while allowing legitimate traffic.', zoneId: 'technology', type: 'Individual', difficulty: 'Medium', points: 160 },
+       { id: 't_q2', title: 'Cybersecurity: Firewall Configuration', description: 'Malicious packets are trying to infiltrate the network! Configure firewall rules to block threats while allowing legitimate services.', zoneId: 'technology', type: 'Individual', difficulty: 'Medium', points: 160 },
        { id: 't_q3', title: 'Data Recovery: Corrupted Drive', description: 'A critical data drive has been corrupted. Use digital forensic tools and techniques to recover as much essential data as possible.', zoneId: 'technology', type: 'Individual', difficulty: 'Hard', points: 180 },
     ]
   },
@@ -185,7 +185,7 @@ const pageTranslations = {
 };
 
 export default function LearningZoneDetailPage({ params }: { params: { zoneId: string } }) {
-  const resolvedParams = use(params); // Unwrap params
+  const resolvedParams = use(params);
   const zone = MOCK_ZONES[resolvedParams.zoneId] || MOCK_ZONES['history']; 
   const IconComponent = zone.iconKey ? iconMap[zone.iconKey] : null;
   const [lang, setLang] = useState<'en' | 'id'>('en');
