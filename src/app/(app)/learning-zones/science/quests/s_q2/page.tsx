@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Wand2, Droplets, Wind, Leaf, PackageSearch, CheckCircle, XCircle, RotateCcw, AlertTriangle, FlaskConical, Recycle, Microscope, Sprout, Bug } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label'; // Added import
 
 const questDetails = {
   id: 's_q2',
@@ -310,7 +311,7 @@ export default function EcoChallengeQuestPage() {
       return;
     }
     if (action.prerequisite && !action.prerequisite(biosphereVitals, identifiedProblems)) {
-        toast({ title: t.toastPrerequisiteNotMet, description: `Check if ${action.labelKey} dependencies are met.`, variant: 'destructive'});
+        toast({ title: t.toastPrerequisiteNotMet, description: `Check if ${t[action.labelKey as keyof typeof t] || action.labelKey} dependencies are met.`, variant: 'destructive'});
         return;
     }
 
@@ -343,7 +344,8 @@ export default function EcoChallengeQuestPage() {
   };
   
   const getProblemDisplayName = (problemId: string) => {
-    return t[problemId as keyof typeof t] || problemId;
+    const key = problemId.startsWith('Problem: ') ? `problem${problemId.substring('Problem: '.length).replace(/\s/g, '')}` : problemId;
+    return t[key as keyof typeof t] || problemId;
   }
 
   return (
@@ -380,8 +382,8 @@ export default function EcoChallengeQuestPage() {
                   <vital.icon className={`mr-2 h-5 w-5 ${vital.value < CRITICAL_THRESHOLD * 2 ? 'text-destructive' : vital.value < vital.target * 0.7 ? 'text-yellow-500' : 'text-green-500' }`} />
                   {t[vital.labelKey as keyof typeof t] || vital.labelKey}: {vital.value} / {vital.target}
                 </Label>
-                <Progress value={vital.value} max={vital.target} className="h-3 mt-1" 
-                  indicatorClassName={vital.value < CRITICAL_THRESHOLD * 2 ? 'bg-destructive' : vital.value < vital.target * 0.7 ? 'bg-yellow-500' : 'bg-green-500'}
+                <Progress value={vital.value} max={vital.target > 0 ? vital.target : 100} className="h-3 mt-1" 
+                   indicatorClassName={vital.value < CRITICAL_THRESHOLD * 2 ? 'bg-destructive' : vital.value < vital.target * 0.7 ? 'bg-yellow-500' : 'bg-green-500'}
                 />
               </div>
             ))}
@@ -417,7 +419,7 @@ export default function EcoChallengeQuestPage() {
               
               let tooltipContent = t[action.descriptionKey as keyof typeof t] || action.descriptionKey;
               if (isDisabledByPrereq) {
-                tooltipContent += ` (Requires: ${action.id === 'neutralizeAcidity' ? getProblemDisplayName('problemAcidicContaminant') : action.id === 'introduceMicrobes' && identifiedProblems.includes('Chemical Contaminant') ? getProblemDisplayName('problemChemicalContaminant') : 'specific conditions'})`;
+                tooltipContent += ` (Requires: ${action.id === 'neutralizeAcidity' ? getProblemDisplayName('problemAcidicContaminant') : action.id === 'introduceMicrobes' && !problems.includes('Chemical Contaminant') ? 'Moderate Water Quality' : action.id === 'introduceMicrobes' ? getProblemDisplayName('problemChemicalContaminant') : 'specific conditions'})`;
               }
 
               return (
