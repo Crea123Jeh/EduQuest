@@ -5,10 +5,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, KeyRound, Eye, VenetianMask, Gem, CheckCircle, Wand2 } from 'lucide-react';
+import { ArrowLeft, KeyRound, Eye, VenetianMask, Gem, CheckCircle, Wand2, Users } from 'lucide-react';
 
 const questDetails = {
   id: 'h_q1',
@@ -19,10 +19,7 @@ const questDetails = {
   points: 120,
 };
 
-const riddleSolutions = {
-  step1: 'SPHINX', // English solution
-  step1_id: 'SFINKS', // Indonesian solution
-};
+const riddleSolution = 'sphinx'; // Correct answer key for multiple choice
 
 const pageTranslations = {
   en: {
@@ -34,10 +31,13 @@ const pageTranslations = {
     submitAnswer: "Submit Answer",
     nextStep: "Proceed to Next Chamber",
     claimReward: "Claim Scepter & Reward",
-    // Step 1: Antechamber Riddle
+    // Step 1: Antechamber Riddle (Multiple Choice)
     antechamberTitle: "The Antechamber Riddle",
     antechamberRiddle: "I have a head of a human, the body of a lion, and guard the great pyramids. What am I?",
-    antechamberPlaceholder: "Your answer (one word)",
+    optionSphinx: "Sphinx",
+    optionMummy: "Mummy",
+    optionPharaoh: "Pharaoh",
+    optionScarab: "Scarab Beetle",
     feedbackCorrectRiddle: "The great stone door rumbles open! You've solved the guardian's riddle.",
     feedbackIncorrectRiddle: "The guardian remains silent. That is not the correct answer.",
     // Step 2: Corridor of Choices
@@ -64,7 +64,7 @@ const pageTranslations = {
     questCompleteMessage: "You've successfully navigated the pyramid and recovered the Pharaoh's Lost Scepter. Your knowledge of ancient Egypt has served you well!",
     toastRewardTitle: "Quest Completed!",
     toastRewardDescription: (points: number) => `You've earned ${points} points for recovering the Pharaoh's Scepter!`,
-    errorNoAnswer: "Please enter an answer for the riddle.",
+    errorNoAnswer: "Please select an answer for the riddle.",
   },
   id: {
     questTitle: "Pencarian Tongkat Firaun yang Hilang",
@@ -77,7 +77,10 @@ const pageTranslations = {
     claimReward: "Klaim Tongkat & Hadiah",
     antechamberTitle: "Teka-Teki Ruang Depan",
     antechamberRiddle: "Aku berkepala manusia, bertubuh singa, dan menjaga piramida agung. Siapakah aku?",
-    antechamberPlaceholder: "Jawabanmu (satu kata)",
+    optionSphinx: "Sfinga",
+    optionMummy: "Mumi",
+    optionPharaoh: "Firaun",
+    optionScarab: "Kumbang Scarab",
     feedbackCorrectRiddle: "Pintu batu besar berderak terbuka! Kamu telah memecahkan teka-teki penjaga.",
     feedbackIncorrectRiddle: "Penjaga tetap diam. Itu bukan jawaban yang benar.",
     corridorTitle: "Koridor Pilihan",
@@ -101,7 +104,7 @@ const pageTranslations = {
     questCompleteMessage: "Kamu telah berhasil menavigasi piramida dan menemukan Tongkat Firaun yang Hilang. Pengetahuanmu tentang Mesir kuno sangat berguna!",
     toastRewardTitle: "Misi Selesai!",
     toastRewardDescription: (points: number) => `Kamu mendapatkan ${points} poin karena menemukan Tongkat Firaun!`,
-    errorNoAnswer: "Silakan masukkan jawaban untuk teka-teki.",
+    errorNoAnswer: "Silakan pilih jawaban untuk teka-teki.",
   }
 };
 
@@ -114,7 +117,7 @@ export default function PharaohScepterQuestPage() {
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [userInput, setUserInput] = useState('');
+  const [selectedRiddleOption, setSelectedRiddleOption] = useState('');
   const [feedback, setFeedback] = useState('');
   const [questCompleted, setQuestCompleted] = useState(false);
   const [sarcophagusSequence, setSarcophagusSequence] = useState<SarcophagusSymbol[]>([]);
@@ -149,15 +152,14 @@ export default function PharaohScepterQuestPage() {
   };
 
   const handleRiddleSubmit = () => {
-    if (!userInput.trim()) {
+    if (!selectedRiddleOption) {
       setFeedback(t.errorNoAnswer);
       return;
     }
-    const solution = lang === 'id' ? riddleSolutions.step1_id : riddleSolutions.step1;
-    if (userInput.trim().toUpperCase() === solution) {
+    if (selectedRiddleOption === riddleSolution) {
       setFeedback(t.feedbackCorrectRiddle);
       setCurrentStep(2);
-      setUserInput('');
+      setSelectedRiddleOption(''); 
     } else {
       setFeedback(t.feedbackIncorrectRiddle);
     }
@@ -194,9 +196,8 @@ export default function PharaohScepterQuestPage() {
         setQuestCompleted(true);
       } else {
         setFeedback(t.feedbackIncorrectSequence);
-        // Optionally auto-reset or let user reset
         setTimeout(() => {
-          if(sarcophagusSequence.length === SARCOPHAGUS_SYMBOLS.length) { // Check again in case it was reset manually
+          if(sarcophagusSequence.length === SARCOPHAGUS_SYMBOLS.length) { 
              setSarcophagusSequence([]);
           }
         }, 1500);
@@ -210,12 +211,17 @@ export default function PharaohScepterQuestPage() {
       title: t.toastRewardTitle,
       description: t.toastRewardDescription(questDetails.points),
     });
-    // Potentially navigate away or mark quest as completed in a global state
   };
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case 1: // Antechamber Riddle
+      case 1: // Antechamber Riddle - Multiple Choice
+        const riddleOptions = [
+          { id: 'sphinx', label: t.optionSphinx },
+          { id: 'mummy', label: t.optionMummy },
+          { id: 'pharaoh', label: t.optionPharaoh },
+          { id: 'scarab', label: t.optionScarab },
+        ];
         return (
           <Card>
             <CardHeader>
@@ -224,17 +230,15 @@ export default function PharaohScepterQuestPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="italic text-lg">{t.antechamberRiddle}</p>
-              <div>
-                <Label htmlFor="riddleAnswer">{t.antechamberPlaceholder}</Label>
-                <Input
-                  id="riddleAnswer"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  placeholder={t.antechamberPlaceholder}
-                  className="mt-1"
-                />
-              </div>
-              {feedback && <p className={`text-sm ${feedback === t.feedbackCorrectRiddle ? 'text-green-600' : 'text-destructive'}`}>{feedback}</p>}
+              <RadioGroup value={selectedRiddleOption} onValueChange={setSelectedRiddleOption} className="space-y-2">
+                {riddleOptions.map(option => (
+                  <div key={option.id} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.id} id={`option-${option.id}`} />
+                    <Label htmlFor={`option-${option.id}`} className="text-base">{option.label}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+              {feedback && <p className={`mt-4 text-sm ${feedback === t.feedbackCorrectRiddle ? 'text-green-600' : 'text-destructive'}`}>{feedback}</p>}
             </CardContent>
             <CardFooter>
               <Button onClick={handleRiddleSubmit} className="w-full">{t.submitAnswer}</Button>
@@ -252,7 +256,7 @@ export default function PharaohScepterQuestPage() {
               <p className="italic text-lg">{t.corridorScenario}</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Button variant="outline" onClick={() => handleCorridorChoice('scarab')}>
-                  <VenetianMask className="mr-2 h-4 w-4" /> {t.choiceScarab}
+                  <Users className="mr-2 h-4 w-4" /> {t.choiceScarab}
                 </Button>
                 <Button variant="outline" onClick={() => handleCorridorChoice('ankh')}>
                   <KeyRound className="mr-2 h-4 w-4" /> {t.choiceAnkh}
@@ -295,14 +299,12 @@ export default function PharaohScepterQuestPage() {
               <p className="italic text-lg">{t.sarcophagusPuzzle}</p>
               <div className="flex justify-center space-x-4 my-4">
                 <Button variant="outline" size="lg" onClick={() => handleSymbolClick('power')} disabled={sarcophagusSequence.length >= 3}>
-                  {/* Using Wand2 as a proxy for Crook */}
                   <Wand2 className="mr-2 h-5 w-5" /> {t.symbolPower.split('(')[0].trim()} 
                 </Button>
                 <Button variant="outline" size="lg" onClick={() => handleSymbolClick('protection')} disabled={sarcophagusSequence.length >= 3}>
                   <Eye className="mr-2 h-5 w-5" /> {t.symbolProtection.split('(')[0].trim()}
                 </Button>
                 <Button variant="outline" size="lg" onClick={() => handleSymbolClick('prosperity')} disabled={sarcophagusSequence.length >= 3}>
-                  {/* Using Gem as a proxy for Lotus/Prosperity */}
                   <Gem className="mr-2 h-5 w-5" /> {t.symbolProsperity.split('(')[0].trim()}
                 </Button>
               </div>
