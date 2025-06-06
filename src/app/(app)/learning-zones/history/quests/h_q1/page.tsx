@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, KeyRound, Eye, Sun, Gem, CheckCircle, Wand2, PuzzleIcon } from 'lucide-react'; // Changed VenetianMask to Sun, Users to PuzzleIcon
+import { ArrowLeft, KeyRound, Eye, Sun, Gem, CheckCircle, Wand2, PuzzleIcon, Feather, Shield } from 'lucide-react';
 
 const questDetails = {
   id: 'h_q1',
@@ -30,7 +30,7 @@ const pageTranslations = {
     backToZone: "Back to History Zone",
     stepLabel: (current: number, total: number) => `Main Step ${current} of ${total}`,
     submitAnswer: "Submit Answer",
-    nextStep: "Proceed to Next Chamber",
+    nextStep: "Proceed", // Generic proceed button
     claimReward: "Claim Scepter & Reward",
     returnToCorridor: "Return to Corridor",
     // Step 1: Antechamber Riddle
@@ -48,19 +48,16 @@ const pageTranslations = {
     choiceScarab: "Path of the Scarab",
     choiceAnkh: "Path of the Ankh",
     choiceJackal: "Path of the Jackal",
-    feedbackCorrectChoiceAnkh: "You chose wisely. The Ankh guides you towards the pharaoh's treasures.",
-    // Step 2A (New Step 4): Scarab's Wisdom Chamber
-    scarabChamberTitle: "Scarab's Wisdom Chamber",
-    scarabChamberIntro: "The Scarab path leads you to a small chamber. An inscription glows faintly: 'What is always coming, but never arrives?'",
-    optionYesterday: "Yesterday",
-    optionToday: "Today",
-    optionTomorrow: "Tomorrow",
-    feedbackCorrectScarabRiddle: "Wise. Like the Scarab, you look to the future. Remember, the Ankh represents life, the direct path to what was lost...",
-    feedbackIncorrectScarabRiddle: "The inscription remains a mystery. Consider another answer.",
-    // Step 2B (New Step 5): Jackal's Snare Chamber
-    jackalChamberTitle: "Jackal's Snare Chamber",
-    jackalChamberDescription: "The Path of the Jackal leads to a dark, narrow passage. A sudden gust of wind extinguishes your torch, plunging you into momentary darkness! After fumbling for a moment, you relight it, but this path feels ominous and misleading.",
-    // Step 3: Sarcophagus Chamber
+    // Step 3 (New): Hall of Sacred Offerings
+    hallOfOfferingsTitle: "The Hall of Sacred Offerings",
+    hallOfOfferingsScenario: "The Path of the Ankh leads you into a serene hall. On a central pedestal rest two items: a 'Feather of Ma'at' (symbolizing truth and balance) and a 'Scarab of Khepri' (symbolizing rebirth and protection). You may choose one to carry with you, or leave them undisturbed.",
+    choiceFeather: "Take Feather of Ma'at",
+    choiceScarabKhepri: "Take Scarab of Khepri",
+    choiceLeaveOfferings: "Leave Offerings Undisturbed",
+    feedbackFeather: "You take the Feather of Ma'at. It feels light and reassuring.",
+    feedbackScarabKhepri: "You take the Scarab of Khepri. It feels solid and protective.",
+    feedbackLeaveOfferings: "You decide to leave the offerings undisturbed, respecting their sanctity.",
+    // Step 4 (was 3): Sarcophagus Chamber
     sarcophagusTitle: "The Sarcophagus Chamber",
     sarcophagusPuzzle: "The pharaoh's sarcophagus is sealed by three rotating discs, each bearing a symbol. To reveal the scepter, align the symbols of 'Power', 'Protection', and 'Prosperity' in that order.",
     symbolPower: "Symbol of Power (Crook)",
@@ -70,12 +67,24 @@ const pageTranslations = {
     resetSequence: "Reset Discs",
     feedbackCorrectSequence: "The discs click into place! The sarcophagus opens, revealing the magnificent scepter!",
     feedbackIncorrectSequence: "The discs do not align. The mechanism remains locked.",
-    // Quest Completion (Step 6)
+    // Step 5 (was 4): Scarab's Wisdom Chamber
+    scarabChamberTitle: "Scarab's Wisdom Chamber",
+    scarabChamberIntro: "The Scarab path leads you to a small chamber. An inscription glows faintly: 'What is always coming, but never arrives?'",
+    optionYesterday: "Yesterday",
+    optionToday: "Today",
+    optionTomorrow: "Tomorrow",
+    feedbackCorrectScarabRiddle: "Wise. Like the Scarab, you look to the future. Remember, the Ankh represents life, the direct path to what was lost...",
+    feedbackIncorrectScarabRiddle: "The inscription remains a mystery. Consider another answer.",
+    // Step 6 (was 5): Jackal's Snare Chamber
+    jackalChamberTitle: "Jackal's Snare Chamber",
+    jackalChamberDescription: "The Path of the Jackal leads to a dark, narrow passage. A sudden gust of wind extinguishes your torch, plunging you into momentary darkness! After fumbling for a moment, you relight it, but this path feels ominous and misleading.",
+    // Quest Completion (Step 7)
     questCompleteTitle: "Scepter Recovered!",
     questCompleteMessage: "You've successfully navigated the pyramid and recovered the Pharaoh's Lost Scepter. Your knowledge of ancient Egypt has served you well!",
     toastRewardTitle: "Quest Completed!",
     toastRewardDescription: (points: number) => `You've earned ${points} points for recovering the Pharaoh's Scepter!`,
     errorNoAnswer: "Please select an answer.",
+    errorNoChoice: "Please make a choice.",
   },
   id: {
     questTitle: "Pencarian Tongkat Firaun yang Hilang",
@@ -84,7 +93,7 @@ const pageTranslations = {
     backToZone: "Kembali ke Zona Sejarah",
     stepLabel: (current: number, total: number) => `Langkah Utama ${current} dari ${total}`,
     submitAnswer: "Kirim Jawaban",
-    nextStep: "Lanjutkan ke Ruang Berikutnya",
+    nextStep: "Lanjutkan",
     claimReward: "Klaim Tongkat & Hadiah",
     returnToCorridor: "Kembali ke Koridor",
     antechamberTitle: "Teka-Teki Ruang Depan",
@@ -100,16 +109,14 @@ const pageTranslations = {
     choiceScarab: "Jalur Scarab",
     choiceAnkh: "Jalur Ankh",
     choiceJackal: "Jalur Jakal",
-    feedbackCorrectChoiceAnkh: "Kamu memilih dengan bijak. Ankh membimbingmu menuju harta karun firaun.",
-    scarabChamberTitle: "Ruang Kebijaksanaan Scarab",
-    scarabChamberIntro: "Jalur Scarab membawamu ke sebuah ruangan kecil. Sebuah tulisan bersinar samar: 'Apa yang selalu datang, tetapi tidak pernah tiba?'",
-    optionYesterday: "Kemarin",
-    optionToday: "Hari Ini",
-    optionTomorrow: "Besok",
-    feedbackCorrectScarabRiddle: "Bijaksana. Seperti Scarab, kamu melihat ke masa depan. Ingat, Ankh melambangkan kehidupan, jalan langsung menuju apa yang hilang...",
-    feedbackIncorrectScarabRiddle: "Tulisan itu tetap menjadi misteri. Pertimbangkan jawaban lain.",
-    jackalChamberTitle: "Ruang Jebakan Jakal",
-    jackalChamberDescription: "Jalur Jakal menuju lorong gelap dan sempit. Embusan angin tiba-tiba memadamkan obormu, menjerumuskanmu ke dalam kegelapan sesaat! Setelah meraba-raba sejenak, kamu menyalakannya kembali, tetapi jalur ini terasa tidak menyenangkan dan menyesatkan.",
+    hallOfOfferingsTitle: "Aula Persembahan Suci",
+    hallOfOfferingsScenario: "Jalur Ankh membawamu ke aula yang tenang. Di atas alas tengah terdapat dua benda: 'Bulu Ma'at' (melambangkan kebenaran dan keseimbangan) dan 'Scarab Khepri' (melambangkan kelahiran kembali dan perlindungan). Kamu boleh memilih satu untuk dibawa, atau membiarkannya tidak terganggu.",
+    choiceFeather: "Ambil Bulu Ma'at",
+    choiceScarabKhepri: "Ambil Scarab Khepri",
+    choiceLeaveOfferings: "Biarkan Persembahan Tidak Terganggu",
+    feedbackFeather: "Kamu mengambil Bulu Ma'at. Terasa ringan dan menenangkan.",
+    feedbackScarabKhepri: "Kamu mengambil Scarab Khepri. Terasa kokoh dan protektif.",
+    feedbackLeaveOfferings: "Kamu memutuskan untuk membiarkan persembahan tidak terganggu, menghormati kesuciannya.",
     sarcophagusTitle: "Ruang Sarkofagus",
     sarcophagusPuzzle: "Sarkofagus firaun disegel oleh tiga cakram berputar, masing-masing dengan simbol. Untuk mengungkap tongkat, sejajarkan simbol 'Kekuasaan', 'Perlindungan', dan 'Kemakmuran' sesuai urutan itu.",
     symbolPower: "Simbol Kekuasaan (Tongkat Gembala)",
@@ -119,17 +126,28 @@ const pageTranslations = {
     resetSequence: "Atur Ulang Cakram",
     feedbackCorrectSequence: "Cakram berbunyi klik! Sarkofagus terbuka, memperlihatkan tongkat yang megah!",
     feedbackIncorrectSequence: "Cakram tidak sejajar. Mekanisme tetap terkunci.",
+    scarabChamberTitle: "Ruang Kebijaksanaan Scarab",
+    scarabChamberIntro: "Jalur Scarab membawamu ke sebuah ruangan kecil. Sebuah tulisan bersinar samar: 'Apa yang selalu datang, tetapi tidak pernah tiba?'",
+    optionYesterday: "Kemarin",
+    optionToday: "Hari Ini",
+    optionTomorrow: "Besok",
+    feedbackCorrectScarabRiddle: "Bijaksana. Seperti Scarab, kamu melihat ke masa depan. Ingat, Ankh melambangkan kehidupan, jalan langsung menuju apa yang hilang...",
+    feedbackIncorrectScarabRiddle: "Tulisan itu tetap menjadi misteri. Pertimbangkan jawaban lain.",
+    jackalChamberTitle: "Ruang Jebakan Jakal",
+    jackalChamberDescription: "Jalur Jakal menuju lorong gelap dan sempit. Embusan angin tiba-tiba memadamkan obormu, menjerumuskanmu ke dalam kegelapan sesaat! Setelah meraba-raba sejenak, kamu menyalakannya kembali, tetapi jalur ini terasa tidak menyenangkan dan menyesatkan.",
     questCompleteTitle: "Tongkat Ditemukan!",
     questCompleteMessage: "Kamu telah berhasil menavigasi piramida dan menemukan Tongkat Firaun yang Hilang. Pengetahuanmu tentang Mesir kuno sangat berguna!",
     toastRewardTitle: "Misi Selesai!",
     toastRewardDescription: (points: number) => `Kamu mendapatkan ${points} poin karena menemukan Tongkat Firaun!`,
     errorNoAnswer: "Silakan pilih jawaban.",
+    errorNoChoice: "Silakan buat pilihan.",
   }
 };
 
-const TOTAL_MAIN_STEPS = 3;
+const TOTAL_MAIN_STEPS = 4; // Antechamber, Corridor, Hall of Offerings, Sarcophagus
 const SARCOPHAGUS_SYMBOLS = ['power', 'protection', 'prosperity'] as const;
 type SarcophagusSymbol = typeof SARCOPHAGUS_SYMBOLS[number];
+type OfferingChoice = 'feather' | 'scarab_khepri' | 'leave';
 
 export default function PharaohScepterQuestPage() {
   const [lang, setLang] = useState<'en' | 'id'>('en');
@@ -138,6 +156,7 @@ export default function PharaohScepterQuestPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedRiddleOption, setSelectedRiddleOption] = useState('');
   const [selectedScarabRiddleOption, setSelectedScarabRiddleOption] = useState('');
+  const [selectedOffering, setSelectedOffering] = useState<OfferingChoice | null>(null);
   const [feedback, setFeedback] = useState('');
   const [questCompleted, setQuestCompleted] = useState(false);
   const [sarcophagusSequence, setSarcophagusSequence] = useState<SarcophagusSymbol[]>([]);
@@ -178,25 +197,48 @@ export default function PharaohScepterQuestPage() {
     }
     if (selectedRiddleOption === riddleSolution) {
       setFeedback(t.feedbackCorrectRiddle);
-      setCurrentStep(2); // Proceed to Corridor of Choices
-      setSelectedRiddleOption(''); 
-      setFeedback(''); // Clear feedback for next step
+      // No automatic advance, button will do it.
     } else {
       setFeedback(t.feedbackIncorrectRiddle);
     }
   };
 
+  const advanceFromRiddle = () => {
+    if (selectedRiddleOption === riddleSolution) {
+        setCurrentStep(2); // Proceed to Corridor of Choices
+        setSelectedRiddleOption(''); 
+        setFeedback(''); // Clear feedback for next step
+    }
+  };
+
   const handleCorridorChoice = (choice: 'ankh' | 'scarab' | 'jackal') => {
-    setFeedback(''); // Clear previous feedback
+    setFeedback(''); 
     if (choice === 'ankh') {
-      setCurrentStep(3); // Proceed to Sarcophagus Chamber
+      setCurrentStep(3); // Proceed to Hall of Offerings
     } else if (choice === 'scarab') {
-      setCurrentStep(4); // Proceed to Scarab's Wisdom Chamber
+      setCurrentStep(5); // Proceed to Scarab's Wisdom Chamber
     } else { // jackal
-      setCurrentStep(5); // Proceed to Jackal's Snare Chamber
+      setCurrentStep(6); // Proceed to Jackal's Snare Chamber
     }
   };
   
+  const handleOfferingChoice = (choice: OfferingChoice) => {
+    setSelectedOffering(choice);
+    if (choice === 'feather') setFeedback(t.feedbackFeather);
+    else if (choice === 'scarab_khepri') setFeedback(t.feedbackScarabKhepri);
+    else setFeedback(t.feedbackLeaveOfferings);
+    // Button will handle advance
+  };
+
+  const advanceFromOffering = () => {
+    if(selectedOffering !== null) {
+        setCurrentStep(4); // Proceed to Sarcophagus Chamber
+        setFeedback('');
+    } else {
+        setFeedback(t.errorNoChoice);
+    }
+  }
+
   const handleScarabRiddleSubmit = () => {
     if (!selectedScarabRiddleOption) {
       setFeedback(t.errorNoAnswer);
@@ -204,7 +246,6 @@ export default function PharaohScepterQuestPage() {
     }
     if (selectedScarabRiddleOption === scarabRiddleSolution) {
       setFeedback(t.feedbackCorrectScarabRiddle);
-      // Button to return to corridor will be shown via feedback state
     } else {
       setFeedback(t.feedbackIncorrectScarabRiddle);
     }
@@ -230,24 +271,30 @@ export default function PharaohScepterQuestPage() {
   };
   
   useEffect(() => {
-    if (currentStep === 3 && sarcophagusSequence.length === SARCOPHAGUS_SYMBOLS.length) {
+    if (currentStep === 4 && sarcophagusSequence.length === SARCOPHAGUS_SYMBOLS.length) {
       const isCorrect = sarcophagusSequence.every((symbol, index) => symbol === SARCOPHAGUS_SYMBOLS[index]);
       if (isCorrect) {
         setFeedback(t.feedbackCorrectSequence);
         setQuestCompleted(true);
-        setCurrentStep(6); // Move to completion step
+        // No automatic advance to completion, button will handle it
       } else {
         setFeedback(t.feedbackIncorrectSequence);
         setTimeout(() => {
-          // Only reset if still on this step and sequence is full (failed attempt)
-          if(currentStep === 3 && sarcophagusSequence.length === SARCOPHAGUS_SYMBOLS.length) { 
+          if(currentStep === 4 && sarcophagusSequence.length === SARCOPHAGUS_SYMBOLS.length) { 
              setSarcophagusSequence([]);
+             setFeedback(''); // Clear feedback after reset
           }
         }, 1500);
       }
     }
   }, [sarcophagusSequence, t.feedbackCorrectSequence, t.feedbackIncorrectSequence, currentStep]);
 
+  const advanceFromSarcophagus = () => {
+      if (questCompleted) {
+          setCurrentStep(7); // Move to completion step
+          setFeedback('');
+      }
+  }
 
   const handleClaimReward = () => {
     toast({
@@ -258,7 +305,7 @@ export default function PharaohScepterQuestPage() {
 
   const renderStepContent = () => {
     switch (currentStep) {
-      case 1: // Antechamber Riddle - Multiple Choice
+      case 1: // Antechamber Riddle
         const riddleOptions = [
           { id: 'sphinx', label: t.optionSphinx },
           { id: 'mummy', label: t.optionMummy },
@@ -284,7 +331,11 @@ export default function PharaohScepterQuestPage() {
               {feedback && <p className={`mt-4 text-sm ${selectedRiddleOption === riddleSolution && feedback === t.feedbackCorrectRiddle ? 'text-green-600' : 'text-destructive'}`}>{feedback}</p>}
             </CardContent>
             <CardFooter>
-              <Button onClick={handleRiddleSubmit} className="w-full">{t.submitAnswer}</Button>
+              {feedback === t.feedbackCorrectRiddle ? (
+                <Button onClick={advanceFromRiddle} className="w-full">{t.nextStep}</Button>
+              ) : (
+                <Button onClick={handleRiddleSubmit} className="w-full">{t.submitAnswer}</Button>
+              )}
             </CardFooter>
           </Card>
         );
@@ -299,7 +350,7 @@ export default function PharaohScepterQuestPage() {
               <p className="italic text-lg">{t.corridorScenario}</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Button variant="outline" onClick={() => handleCorridorChoice('scarab')}>
-                  <Sun className="mr-2 h-4 w-4" /> {t.choiceScarab} {/* Changed Icon */}
+                  <Sun className="mr-2 h-4 w-4" /> {t.choiceScarab}
                 </Button>
                 <Button variant="outline" onClick={() => handleCorridorChoice('ankh')}>
                   <KeyRound className="mr-2 h-4 w-4" /> {t.choiceAnkh}
@@ -308,27 +359,53 @@ export default function PharaohScepterQuestPage() {
                   <Eye className="mr-2 h-4 w-4" /> {t.choiceJackal}
                 </Button>
               </div>
-              {feedback && <p className={`mt-4 text-sm ${feedback === t.feedbackCorrectChoiceAnkh ? 'text-green-600' : 'text-muted-foreground'}`}>{feedback}</p>}
             </CardContent>
           </Card>
         );
-      case 3: // Sarcophagus Chamber
+      case 3: // Hall of Sacred Offerings
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.hallOfOfferingsTitle}</CardTitle>
+              <CardDescription>{t.stepLabel(3, TOTAL_MAIN_STEPS)}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="italic text-lg">{t.hallOfOfferingsScenario}</p>
+              <div className="grid grid-cols-1 gap-4">
+                <Button variant="outline" onClick={() => handleOfferingChoice('feather')} className={selectedOffering === 'feather' ? 'ring-2 ring-primary' : ''}>
+                  <Feather className="mr-2 h-4 w-4" /> {t.choiceFeather}
+                </Button>
+                <Button variant="outline" onClick={() => handleOfferingChoice('scarab_khepri')} className={selectedOffering === 'scarab_khepri' ? 'ring-2 ring-primary' : ''}>
+                  <Shield className="mr-2 h-4 w-4" /> {t.choiceScarabKhepri}
+                </Button>
+                <Button variant="outline" onClick={() => handleOfferingChoice('leave')} className={selectedOffering === 'leave' ? 'ring-2 ring-primary' : ''}>
+                  {t.choiceLeaveOfferings}
+                </Button>
+              </div>
+              {feedback && <p className={`mt-4 text-sm ${feedback === t.errorNoChoice ? 'text-destructive' : 'text-green-600'}`}>{feedback}</p>}
+            </CardContent>
+            <CardFooter>
+                <Button onClick={advanceFromOffering} className="w-full" disabled={!selectedOffering}>{t.nextStep}</Button>
+            </CardFooter>
+          </Card>
+        );
+      case 4: // Sarcophagus Chamber
         return (
           <Card>
             <CardHeader>
               <CardTitle>{t.sarcophagusTitle}</CardTitle>
-              <CardDescription>{t.stepLabel(3, TOTAL_MAIN_STEPS)}</CardDescription>
+              <CardDescription>{t.stepLabel(4, TOTAL_MAIN_STEPS)}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="italic text-lg">{t.sarcophagusPuzzle}</p>
               <div className="flex justify-center space-x-4 my-4">
-                <Button variant="outline" size="lg" onClick={() => handleSymbolClick('power')} disabled={sarcophagusSequence.length >= 3}>
+                <Button variant="outline" size="lg" onClick={() => handleSymbolClick('power')} disabled={sarcophagusSequence.length >= 3 || questCompleted}>
                   <Wand2 className="mr-2 h-5 w-5" /> {t.symbolPower.split('(')[0].trim()} 
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => handleSymbolClick('protection')} disabled={sarcophagusSequence.length >= 3}>
+                <Button variant="outline" size="lg" onClick={() => handleSymbolClick('protection')} disabled={sarcophagusSequence.length >= 3 || questCompleted}>
                   <Eye className="mr-2 h-5 w-5" /> {t.symbolProtection.split('(')[0].trim()}
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => handleSymbolClick('prosperity')} disabled={sarcophagusSequence.length >= 3}>
+                <Button variant="outline" size="lg" onClick={() => handleSymbolClick('prosperity')} disabled={sarcophagusSequence.length >= 3 || questCompleted}>
                   <Gem className="mr-2 h-5 w-5" /> {t.symbolProsperity.split('(')[0].trim()}
                 </Button>
               </div>
@@ -344,14 +421,23 @@ export default function PharaohScepterQuestPage() {
                   </span>
                 </p>
               </div>
-               <Button variant="link" onClick={handleResetSequence} className="text-sm p-0 h-auto" disabled={sarcophagusSequence.length === 0}>
+               <Button variant="link" onClick={handleResetSequence} className="text-sm p-0 h-auto" disabled={sarcophagusSequence.length === 0 || questCompleted}>
                 {t.resetSequence}
               </Button>
               {feedback && <p className={`mt-2 text-sm ${feedback === t.feedbackCorrectSequence ? 'text-green-600' : 'text-destructive'}`}>{feedback}</p>}
             </CardContent>
+            <CardFooter>
+                {questCompleted && feedback === t.feedbackCorrectSequence ? (
+                    <Button onClick={advanceFromSarcophagus} className="w-full">{t.nextStep}</Button>
+                ): (
+                    <Button onClick={() => { /* Optional: action if needed, or disable */ }} className="w-full" disabled={!sarcophagusSequence.length || sarcophagusSequence.length < SARCOPHAGUS_SYMBOLS.length || questCompleted}>
+                        {t.submitAnswer}
+                    </Button>
+                )}
+            </CardFooter>
           </Card>
         );
-      case 4: // Scarab's Wisdom Chamber
+      case 5: // Scarab's Wisdom Chamber
         const scarabRiddleOptions = [
           { id: 'yesterday', label: t.optionYesterday },
           { id: 'today', label: t.optionToday },
@@ -388,7 +474,7 @@ export default function PharaohScepterQuestPage() {
             </CardFooter>
           </Card>
         );
-      case 5: // Jackal's Snare Chamber
+      case 6: // Jackal's Snare Chamber
         return (
           <Card>
             <CardHeader>
@@ -403,7 +489,7 @@ export default function PharaohScepterQuestPage() {
             </CardFooter>
           </Card>
         );
-       case 6: // Quest Completion
+       case 7: // Quest Completion
           return (
             <Card className="text-center">
               <CardHeader>
@@ -412,7 +498,6 @@ export default function PharaohScepterQuestPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-lg">{t.questCompleteMessage}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{feedback}</p> {/* Shows "Discs click into place..." */}
               </CardContent>
               <CardFooter>
                 <Button onClick={handleClaimReward} className="w-full">
@@ -437,7 +522,7 @@ export default function PharaohScepterQuestPage() {
       <Card className="mb-8 shadow-xl">
         <CardHeader>
            <div className="flex items-center gap-2 mb-1">
-             <PuzzleIcon className="h-7 w-7 text-accent" /> {/* Changed Icon */}
+             <PuzzleIcon className="h-7 w-7 text-accent" />
              <CardTitle className="font-headline text-3xl">{currentQuestDetails.title}</CardTitle>
           </div>
           <CardDescription className="text-lg">{currentQuestDetails.description}</CardDescription>
@@ -453,5 +538,3 @@ export default function PharaohScepterQuestPage() {
     </div>
   );
 }
-
-      
