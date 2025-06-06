@@ -372,9 +372,3 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
     </div>
   );
 }
-
-    
-
-    
-
-    
