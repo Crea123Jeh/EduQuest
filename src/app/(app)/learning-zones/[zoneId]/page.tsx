@@ -88,6 +88,8 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     aiHint: 'futuristic music stage',
     quests: [
        { id: 'mu_q1', title: 'Symphony of the Stars', description: 'Compose an original piece of music inspired by the cosmos. Use unique sound effects to represent planets and nebulae.', zoneId: 'music', type: 'Individual', difficulty: 'Hard', points: 180 },
+       { id: 'mu_q2', title: 'Rhythm Renegade: Beat Master Challenge', description: 'Test your rhythmic precision! Listen to complex beats and recreate them using a virtual drum pad.', zoneId: 'music', type: 'Individual', difficulty: 'Medium', points: 160 },
+       { id: 'mu_q3', title: 'Melody Matchmaker: Harmony Puzzles', description: 'Unscramble melodic fragments to reconstruct famous tunes, or identify harmonious (and dissonant!) chord progressions.', zoneId: 'music', type: 'Individual', difficulty: 'Hard', points: 190 },
     ]
   },
   {
@@ -217,7 +219,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
   }, []);
 
   const t = pageTranslations[lang];
-  const mechanicsDescHtml = t.mechanicsDescription.replace('{zoneName}', zone.name);
+  const mechanicsDescHtml = t.mechanicsDescription.replace('{zoneName}', zone.name);;
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
