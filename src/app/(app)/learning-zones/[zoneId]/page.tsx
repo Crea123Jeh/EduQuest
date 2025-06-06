@@ -32,7 +32,7 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     aiHint: 'ancient library time portal',
     quests: [
       { id: 'h_q1', title: 'The Pharaoh\'s Lost Scepter', description: 'Navigate booby-trapped pyramids and decipher hieroglyphs to find the legendary scepter before rival explorers!', zoneId: 'history', type: 'Individual', difficulty: 'Medium', points: 120 },
-      { id: 'h_q2', title: 'Collaboration Door: Silk Road Caravan Masters', description: 'Team up (conceptually) to manage a perilous Silk Road journey. One navigates, the other trades. Success means riches, failure... bandits!', zoneId: 'history', type: 'Collaborative', difficulty: 'Medium', points: 180 },
+      { id: 'h_q2', title: 'Silk Road: Caravan Masters', description: 'As co-leaders of a Silk Road caravan, make crucial navigation and trade decisions. Both must succeed to prosper!', zoneId: 'history', type: 'Collaborative', difficulty: 'Medium', points: 180 },
       { id: 'h_q3', title: 'Ethical Dilemma: The Revolutionary\'s Choice', description: 'You\'ve uncovered a plot that could change a nation. Expose it and risk chaos, or stay silent and maintain order? The fate of many rests on your decision.', zoneId: 'history', type: 'Ethical Dilemma', difficulty: 'Hard', points: 100 },
     ]
   },
@@ -43,7 +43,7 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     image: 'https://placehold.co/1200x400.png',
     aiHint: 'futuristic dojo numbers',
     quests: [
-      { id: 'm_q1', title: 'Fractal Fortress Defense', description: 'Design and deploy fractal patterns to defend the Citadel from rogue data streams. The more complex, the stronger your shield!', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
+      { id: 'm_q1', title: 'Fractal Fortress Defense', description: 'Configure and deploy a fractal shield to protect the Citadel from incoming data corruption. Balance shield strength with energy cost based on fractal type and iteration complexity.', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
       { id: 'm_q2', title: 'Algorithm Assembly Challenge: Precision Protocol', description: 'Construct a precise data validation and calculation protocol. Each component has a computational cost. Assemble the correct sequence within the given budget to succeed!', zoneId: 'math', type: 'Collaborative', difficulty: 'Medium', points: 150 },
       { id: 'm_q3', title: 'The Infinite Labyrinth of Pi', description: 'Navigate a maze where each turn is decided by a digit of Pi. How far can you go before getting lost in infinity?', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 170 },
     ]
