@@ -1,3 +1,6 @@
+
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,9 +8,9 @@ import { ZoneCard } from '@/components/ZoneCard';
 import { ClassroomCard } from '@/components/ClassroomCard';
 import type { LearningZone, Classroom, Quest } from '@/types';
 import { History, Calculator, FlaskConical, ArrowRight, BookOpenCheck, Users, Puzzle } from 'lucide-react';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
 
-// Mock Data
+// Mock Data - In a real app, this data might also need i18n if names/descriptions change
 const learningZones: LearningZone[] = [
   { id: 'history', name: 'History Zone', description: 'Explore ancient civilizations and pivotal historical events.', icon: History, subject: 'History', image: 'https://placehold.co/400x250.png', aiHint: 'history ancient' },
   { id: 'math', name: 'Mathematics Realm', description: 'Solve intriguing puzzles and master mathematical concepts.', icon: Calculator, subject: 'Mathematics', image: 'https://placehold.co/400x250.png', aiHint: 'math abstract' },
@@ -24,23 +27,90 @@ const activeQuests: Quest[] = [
   { id: 'q2', title: 'Geometric Guardians', description: 'Protect the realm using geometric principles.', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
 ];
 
+const dashboardTranslations = {
+  en: {
+    welcomeTitle: "Welcome to EduQuest!",
+    welcomeDescription: "Your journey into compassionate and collaborative learning starts here. What will you explore today?",
+    exploreZonesButton: "Explore Learning Zones",
+    viewClassroomsButton: "View Classrooms",
+    featuredZonesTitle: "Featured Learning Zones",
+    yourClassroomsTitle: "Your Classrooms",
+    noClassroomsMessage: "You are not currently enrolled in any classrooms.",
+    joinClassroomButton: "Join a Classroom",
+    activeQuestsTitle: "Active Quests",
+    questZoneLabel: "Zone",
+    questDifficultyLabel: "Difficulty",
+    questPointsLabel: "Points",
+    continueQuestButton: "Continue Quest",
+    noQuestsMessage: "No active quests at the moment. Explore a zone to find new adventures!",
+    findQuestsButton: "Find Quests",
+  },
+  id: {
+    welcomeTitle: "Selamat Datang di EduQuest!",
+    welcomeDescription: "Perjalanan Anda menuju pembelajaran yang penuh kasih dan kolaboratif dimulai di sini. Apa yang akan Anda jelajahi hari ini?",
+    exploreZonesButton: "Jelajahi Zona Belajar",
+    viewClassroomsButton: "Lihat Ruang Kelas",
+    featuredZonesTitle: "Zona Belajar Unggulan",
+    yourClassroomsTitle: "Ruang Kelas Anda",
+    noClassroomsMessage: "Anda saat ini tidak terdaftar di ruang kelas mana pun.",
+    joinClassroomButton: "Gabung Ruang Kelas",
+    activeQuestsTitle: "Misi Aktif",
+    questZoneLabel: "Zona",
+    questDifficultyLabel: "Kesulitan",
+    questPointsLabel: "Poin",
+    continueQuestButton: "Lanjutkan Misi",
+    noQuestsMessage: "Tidak ada misi aktif saat ini. Jelajahi zona untuk menemukan petualangan baru!",
+    findQuestsButton: "Cari Misi",
+  }
+};
+
 export default function DashboardPage() {
+  const [lang, setLang] = useState<'en' | 'id'>('en');
+
+  useEffect(() => {
+    const updateLang = () => {
+      const savedSettings = localStorage.getItem('user-app-settings');
+      let newLang: 'en' | 'id' = 'en';
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          if (parsed.language && (parsed.language === 'en' || parsed.language === 'id')) {
+            newLang = parsed.language;
+          }
+        } catch (e) { console.error("Error reading lang for Dashboard", e); }
+      }
+      setLang(newLang);
+    };
+
+    updateLang();
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'user-app-settings') {
+        updateLang();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const t = dashboardTranslations[lang];
+
   return (
     <div className="container mx-auto pt-0 pb-8 px-4 md:px-0">
       <Card className="mt-5 mb-8 bg-gradient-to-r from-primary/50 to-primary/20 border-primary/30 shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline text-3xl text-foreground">Welcome to EduQuest!</CardTitle>
+          <CardTitle className="font-headline text-3xl text-foreground">{t.welcomeTitle}</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Your journey into compassionate and collaborative learning starts here. What will you explore today?
+            {t.welcomeDescription}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
             <Button size="lg" asChild>
-              <Link href="/learning-zones">Explore Learning Zones <BookOpenCheck className="ml-2 h-5 w-5" /></Link>
+              <Link href="/learning-zones">{t.exploreZonesButton} <BookOpenCheck className="ml-2 h-5 w-5" /></Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/classrooms">View Classrooms <Users className="ml-2 h-5 w-5" /></Link>
+              <Link href="/classrooms">{t.viewClassroomsButton} <Users className="ml-2 h-5 w-5" /></Link>
             </Button>
           </div>
         </CardContent>
@@ -49,7 +119,7 @@ export default function DashboardPage() {
       <section className="mb-12">
         <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
           <BookOpenCheck className="mr-3 h-7 w-7 text-accent" />
-          Featured Learning Zones
+          {t.featuredZonesTitle}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {learningZones.map((zone) => (
@@ -61,7 +131,7 @@ export default function DashboardPage() {
       <section className="mb-12">
         <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
           <Users className="mr-3 h-7 w-7 text-accent" />
-          Your Classrooms
+          {t.yourClassroomsTitle}
         </h2>
         {classrooms.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -73,9 +143,9 @@ export default function DashboardPage() {
           <Card className="text-center py-8">
             <CardContent>
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">You are not currently enrolled in any classrooms.</p>
+              <p className="text-muted-foreground mb-4">{t.noClassroomsMessage}</p>
               <Button asChild variant="outline">
-                <Link href="/classrooms/join">Join a Classroom</Link>
+                <Link href="/classrooms/join">{t.joinClassroomButton}</Link>
               </Button>
             </CardContent>
           </Card>
@@ -85,7 +155,7 @@ export default function DashboardPage() {
       <section>
         <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
           <Puzzle className="mr-3 h-7 w-7 text-accent" />
-          Active Quests
+          {t.activeQuestsTitle}
         </h2>
         {activeQuests.length > 0 ? (
           <div className="space-y-4">
@@ -96,12 +166,12 @@ export default function DashboardPage() {
                   <CardDescription>{quest.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">
-                  <p>Zone: {learningZones.find(z => z.id === quest.zoneId)?.name || 'N/A'}</p>
-                  <p>Difficulty: {quest.difficulty} | Points: {quest.points}</p>
+                  <p>{t.questZoneLabel}: {learningZones.find(z => z.id === quest.zoneId)?.name || 'N/A'}</p>
+                  <p>{t.questDifficultyLabel}: {quest.difficulty} | {t.questPointsLabel}: {quest.points}</p>
                 </CardContent>
                 <CardFooter>
                   <Button variant="link" asChild className="p-0 h-auto text-accent">
-                    <Link href={`/learning-zones/${quest.zoneId}/quests/${quest.id}`}>Continue Quest <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                    <Link href={`/learning-zones/${quest.zoneId}/quests/${quest.id}`}>{t.continueQuestButton} <ArrowRight className="ml-1 h-4 w-4" /></Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -111,9 +181,9 @@ export default function DashboardPage() {
            <Card className="text-center py-8">
             <CardContent>
               <Puzzle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">No active quests at the moment. Explore a zone to find new adventures!</p>
+              <p className="text-muted-foreground mb-4">{t.noQuestsMessage}</p>
               <Button asChild variant="outline">
-                <Link href="/learning-zones">Find Quests</Link>
+                <Link href="/learning-zones">{t.findQuestsButton}</Link>
               </Button>
             </CardContent>
           </Card>

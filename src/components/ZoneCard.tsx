@@ -1,16 +1,58 @@
+
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import type { LearningZone } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface ZoneCardProps {
   zone: LearningZone;
 }
 
+const cardTranslations = {
+  en: {
+    exploreZone: "Explore Zone",
+  },
+  id: {
+    exploreZone: "Jelajahi Zona",
+  }
+};
+
 export function ZoneCard({ zone }: ZoneCardProps) {
   const IconComponent = zone.icon;
+  const [lang, setLang] = useState<'en' | 'id'>('en');
+
+  useEffect(() => {
+    const updateLang = () => {
+      const savedSettings = localStorage.getItem('user-app-settings');
+      let newLang: 'en' | 'id' = 'en';
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          if (parsed.language && (parsed.language === 'en' || parsed.language === 'id')) {
+            newLang = parsed.language;
+          }
+        } catch (e) { console.error("Error reading lang for ZoneCard", e); }
+      }
+      setLang(newLang);
+    };
+
+    updateLang();
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'user-app-settings') {
+        updateLang();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const t = cardTranslations[lang];
 
   return (
     <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 overflow-hidden rounded-lg">
@@ -34,7 +76,7 @@ export function ZoneCard({ zone }: ZoneCardProps) {
       <CardFooter>
         <Button asChild className="w-full" variant="outline">
           <Link href={`/learning-zones/${zone.id}`}>
-            Explore Zone <ArrowRight className="ml-2 h-4 w-4" />
+            {t.exploreZone} <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </CardFooter>
