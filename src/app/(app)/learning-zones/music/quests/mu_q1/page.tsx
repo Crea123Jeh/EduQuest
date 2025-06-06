@@ -56,7 +56,7 @@ const pageTranslations = {
     fxWormhole: "Wormhole Whoosh (Swirling, doppler effect)",
     composeButton: "Compose Symphony",
     composingButton: "Composing...",
-    compositionResultTitle: "Symphony "Playbacked"",
+    compositionResultTitle: "Symphony \"Playbacked\"",
     compositionFeedbackLabel: "Conductor's Notes:",
     feedbackSereneStarlightWindsComet: "A truly celestial and peaceful symphony! The Serene mood, twinkling Starlight Melody, and gentle Cosmic Winds, accented by a Comet's Trail, paint a beautiful picture of the tranquil cosmos.",
     feedbackMajesticGalacticPulsarsAsteroid: "A majestic masterpiece! The Grand mood, powerful Galactic Bassline, and rhythmic Distant Pulsars, dramatically punctuated by an Asteroid's Impact, evoke the raw power and awe of the universe.",
@@ -97,7 +97,7 @@ const pageTranslations = {
     fxWormhole: "Desiran Lubang Cacing (Berputar, efek doppler)",
     composeButton: "Ciptakan Simfoni",
     composingButton: "Menciptakan...",
-    compositionResultTitle: "Simfoni "Diputar"",
+    compositionResultTitle: "Simfoni \"Diputar\"",
     compositionFeedbackLabel: "Catatan Konduktor:",
     feedbackSereneStarlightWindsComet: "Simfoni surgawi yang damai! Mood Tenang, Melodi Cahaya Bintang yang berkelap-kelip, dan Angin Kosmik yang lembut, dihiasi Jejak Komet, melukiskan gambaran indah kosmos yang tenteram.",
     feedbackMajesticGalacticPulsarsAsteroid: "Mahakarya yang megah! Mood Agung, Bassline Galaksi yang kuat, dan Pulsar Jauh yang berirama, secara dramatis diselingi oleh Hantaman Asteroid, membangkitkan kekuatan mentah dan kekaguman alam semesta.",
@@ -335,4 +335,3 @@ export default function SymphonyOfTheStarsPage() {
     </div>
   );
 }
-
