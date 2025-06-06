@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { LearningZone, Quest } from '@/types';
-import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, Beaker, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, Beaker, Lightbulb, type LucideIcon } from 'lucide-react';
 import { useState, useEffect, use } from 'react';
 
 const iconMap: Record<string, LucideIcon> = {
@@ -153,7 +153,11 @@ const pageTranslations = {
     featuredExperimentTitle: "Featured Experiment",
     featuredExperimentAlt: "Volcano experiment illustration",
     featuredExperimentName: "The Baking Soda Volcano",
-    featuredExperimentDescription: "A classic and fun experiment demonstrating chemical reactions! Mix household items to create your own erupting volcano. Learn about acids, bases, and gas production."
+    featuredExperimentDescription: "A classic and fun experiment demonstrating chemical reactions! Mix household items to create your own erupting volcano. Learn about acids, bases, and gas production.",
+    featuredPuzzleTitle: "Featured Math Puzzle",
+    featuredPuzzleAlt: "Illustration of a logic puzzle or brain teaser",
+    featuredPuzzleName: "The Bridge Crossing Riddle",
+    featuredPuzzleDescription: "Four people need to cross a rickety bridge at night. They have one flashlight and the bridge can only hold two people at a time. Each person walks at a different speed: 1, 2, 5, and 10 minutes to cross. When two people cross, they walk at the slower person's speed. What is the minimum time for all four to cross?",
   },
   id: {
     backToZones: "Kembali ke Semua Zona",
@@ -170,7 +174,11 @@ const pageTranslations = {
     featuredExperimentTitle: "Eksperimen Unggulan",
     featuredExperimentAlt: "Ilustrasi eksperimen gunung berapi",
     featuredExperimentName: "Gunung Berapi Soda Kue",
-    featuredExperimentDescription: "Eksperimen klasik dan menyenangkan yang menunjukkan reaksi kimia! Campurkan bahan-bahan rumah tangga untuk membuat gunung berapi meletus Anda sendiri. Pelajari tentang asam, basa, dan produksi gas."
+    featuredExperimentDescription: "Eksperimen klasik dan menyenangkan yang menunjukkan reaksi kimia! Campurkan bahan-bahan rumah tangga untuk membuat gunung berapi meletus Anda sendiri. Pelajari tentang asam, basa, dan produksi gas.",
+    featuredPuzzleTitle: "Teka-Teki Matematika Unggulan",
+    featuredPuzzleAlt: "Ilustrasi teka-teki logika atau asah otak",
+    featuredPuzzleName: "Teka-Teki Penyeberangan Jembatan",
+    featuredPuzzleDescription: "Empat orang perlu menyeberangi jembatan reyot di malam hari. Mereka memiliki satu senter dan jembatan hanya dapat menampung dua orang sekaligus. Setiap orang berjalan dengan kecepatan berbeda: 1, 2, 5, dan 10 menit untuk menyeberang. Ketika dua orang menyeberang, mereka berjalan dengan kecepatan orang yang lebih lambat. Berapa waktu minimum bagi keempat orang untuk menyeberang?",
   }
 };
 
@@ -334,6 +342,35 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
           </Card>
         </section>
       )}
+
+      {zone.id === 'math' && (
+        <section className="mt-12">
+          <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
+            <Lightbulb className="mr-3 h-7 w-7 text-accent" />
+            {t.featuredPuzzleTitle}
+          </h2>
+          <Card className="shadow-md rounded-lg">
+            <CardContent className="pt-6 flex flex-col md:flex-row items-center gap-6">
+              <Image
+                src="https://placehold.co/300x200.png"
+                alt={t.featuredPuzzleAlt}
+                width={300}
+                height={200}
+                className="rounded-md object-cover"
+                data-ai-hint="logic puzzle brain teaser"
+              />
+              <div>
+                <h3 className="font-semibold text-lg mb-2 text-card-foreground">{t.featuredPuzzleName}</h3>
+                <p className="text-muted-foreground">
+                  {t.featuredPuzzleDescription}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      )}
     </div>
   );
 }
+
+    
