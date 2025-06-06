@@ -337,16 +337,16 @@ export default function FirewallConfigQuestPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 bg-muted/50 rounded-md border space-y-2">
-                <p><strong className="text-sm">{t.sourceIpLabel}</strong> <Badge variant="outline">{t[currentPacket.sourceIpKey as keyof typeof t]}</Badge></p>
-                <p><strong className="text-sm">{t.destPortLabel}</strong> <Badge variant="outline">{t[currentPacket.destPortKey as keyof typeof t]}</Badge></p>
-                <p><strong className="text-sm">{t.protocolLabel}</strong> <Badge variant="secondary">{t[currentPacket.protocolKey as keyof typeof t]}</Badge></p>
+                <div className="flex items-center gap-2"><strong className="text-sm">{t.sourceIpLabel}</strong> <Badge variant="outline">{t[currentPacket.sourceIpKey as keyof typeof t]}</Badge></div>
+                <div className="flex items-center gap-2"><strong className="text-sm">{t.destPortLabel}</strong> <Badge variant="outline">{t[currentPacket.destPortKey as keyof typeof t]}</Badge></div>
+                <div className="flex items-center gap-2"><strong className="text-sm">{t.protocolLabel}</strong> <Badge variant="secondary">{t[currentPacket.protocolKey as keyof typeof t]}</Badge></div>
                 <p><strong className="text-sm">{t.descriptionLabel}</strong> {t[currentPacket.descriptionKey as keyof typeof t]}</p>
-                <p className="flex items-center"><strong className="text-sm">{t.threatLevelLabel}</strong> 
+                <div className="flex items-center"><strong className="text-sm">{t.threatLevelLabel}</strong> 
                     <Badge variant={getThreatBadgeVariant(currentPacket.threatLevelKey)} className="ml-2 flex items-center">
                         {getThreatIcon(currentPacket.threatLevelKey)}
                         {t[('threatLevel' + currentPacket.threatLevelKey.charAt(0).toUpperCase() + currentPacket.threatLevelKey.slice(1)) as keyof typeof t]}
                     </Badge>
-                </p>
+                </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4 pt-4">
