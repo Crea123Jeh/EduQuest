@@ -260,7 +260,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
                 </CardHeader>
                 <CardContent className="flex-grow space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Badge variant={quest.type === 'Collaborative' ? 'default' : 'secondary'} className={`${quest.type === 'Collaborative' ? 'bg-accent text-accent-foreground' : ''}`}>{quest.type}</Badge>
+                    <Badge variant={quest.type === 'Collaborative' ? 'default' : quest.type === 'Ethical Dilemma' ? 'destructive' : 'secondary'} className={`${quest.type === 'Collaborative' ? 'bg-accent text-accent-foreground' : quest.type === 'Ethical Dilemma' ? 'bg-red-500/80 text-white' : ''}`}>{quest.type}</Badge>
                     <Badge variant="outline">{quest.difficulty}</Badge>
                   </div>
                   <p><Star className="inline mr-1 h-4 w-4 text-yellow-400" /> {quest.points} Points</p>
@@ -372,6 +372,8 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
     </div>
   );
 }
+
+    
 
     
 
