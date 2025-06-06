@@ -1,4 +1,6 @@
 
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -6,8 +8,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import type { LearningZone, Quest } from '@/types';
 import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, type LucideIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-// Define the icon map
 const iconMap: Record<string, LucideIcon> = {
   History,
   Calculator,
@@ -21,7 +23,6 @@ const iconMap: Record<string, LucideIcon> = {
   BrainCog,
 };
 
-// Mock Data - In a real app, this would be fetched based on params.zoneId
 const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
   { 
     id: 'history', name: 'History Zone: Time Travelers\' Guild HQ', 
@@ -136,16 +137,76 @@ const MOCK_ZONES: Record<string, LearningZone> = MOCK_ZONES_DATA.reduce((acc, zo
   return acc;
 }, {} as Record<string, LearningZone>);
 
+const pageTranslations = {
+  en: {
+    backToZones: "Back to All Zones",
+    questsInZone: "Quests in this Zone",
+    startQuest: "Start Quest",
+    noQuests: "No quests available in this zone yet. Our quest designers are hard at work!",
+    suggestQuest: "Suggest a Quest!",
+    zoneMechanics: "Zone Mechanics",
+    collaborationDoors: "Collaboration Doors",
+    collaborationDoorsDesc: "Two or more students must solve related puzzles or perform actions simultaneously to unlock the path forward. Communication is key!",
+    brokenBridges: "Broken Bridges",
+    brokenBridgesDesc: "The path is blocked! Team members might need to sacrifice points, share resources, or solve a collective mini-game for the group to cross.",
+    mechanicsDescription: "Many quests in {zoneName} feature unique collaborative challenges like <span class=\"font-semibold text-accent\">Collaboration Doors</span> (requiring synchronized answers or actions) and <span class=\"font-semibold text-accent\">Broken Bridges</span> (demanding teamwork, resource sharing, or even point sacrifices for the greater good). These are designed to foster empathy, communication, and collective problem-solving."
+  },
+  id: {
+    backToZones: "Kembali ke Semua Zona",
+    questsInZone: "Misi di Zona Ini",
+    startQuest: "Mulai Misi",
+    noQuests: "Belum ada misi yang tersedia di zona ini. Desainer misi kami sedang bekerja keras!",
+    suggestQuest: "Sarankan Misi!",
+    zoneMechanics: "Mekanika Zona",
+    collaborationDoors: "Pintu Kolaborasi",
+    collaborationDoorsDesc: "Dua siswa atau lebih harus memecahkan teka-teki terkait atau melakukan tindakan secara bersamaan untuk membuka jalan ke depan. Komunikasi adalah kunci!",
+    brokenBridges: "Jembatan Rusak",
+    brokenBridgesDesc: "Jalan terhalang! Anggota tim mungkin perlu mengorbankan poin, berbagi sumber daya, atau menyelesaikan mini-game kolektif agar grup dapat menyeberang.",
+    mechanicsDescription: "Banyak misi di {zoneName} menampilkan tantangan kolaboratif unik seperti <span class=\"font-semibold text-accent\">Pintu Kolaborasi</span> (membutuhkan jawaban atau tindakan yang disinkronkan) dan <span class=\"font-semibold text-accent\">Jembatan Rusak</span> (menuntut kerja sama tim, berbagi sumber daya, atau bahkan pengorbanan poin untuk kebaikan yang lebih besar). Ini dirancang untuk menumbuhkan empati, komunikasi, dan pemecahan masalah kolektif."
+  }
+};
 
 export default function LearningZoneDetailPage({ params }: { params: { zoneId: string } }) {
   const zone = MOCK_ZONES[params.zoneId] || MOCK_ZONES['history']; // Fallback to history if not found
   const IconComponent = zone.iconKey ? iconMap[zone.iconKey] : null;
+  const [lang, setLang] = useState<'en' | 'id'>('en');
+
+  useEffect(() => {
+    const updateLang = () => {
+      const savedSettings = localStorage.getItem('user-app-settings');
+      let newLang: 'en' | 'id' = 'en';
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          if (parsed.language && (parsed.language === 'en' || parsed.language === 'id')) {
+            newLang = parsed.language;
+          }
+        } catch (e) { console.error("Error reading lang for LearningZoneDetailPage", e); }
+      }
+      setLang(newLang);
+    };
+
+    updateLang();
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'user-app-settings') {
+        updateLang();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const t = pageTranslations[lang];
+  // For dynamic text in mechanicsDescription
+  const mechanicsDescHtml = t.mechanicsDescription.replace('{zoneName}', zone.name);
+
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
       <Button variant="outline" asChild className="mb-6">
         <Link href="/learning-zones">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to All Zones
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t.backToZones}
         </Link>
       </Button>
 
@@ -170,7 +231,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
       <section className="mb-12">
         <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
           <Puzzle className="mr-3 h-7 w-7 text-accent" />
-          Quests in this Zone
+          {t.questsInZone}
         </h2>
         {zone.quests && zone.quests.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -190,7 +251,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
                 <CardFooter>
                   <Button asChild className="w-full">
                     <Link href={`/learning-zones/${zone.id}/quests/${quest.id}`}>
-                      Start Quest <Zap className="ml-2 h-4 w-4" />
+                      {t.startQuest} <Zap className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </CardFooter>
@@ -201,9 +262,9 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
           <Card className="text-center py-8">
             <CardContent>
                  <Puzzle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No quests available in this zone yet. Our quest designers are hard at work!</p>
+                <p className="text-muted-foreground">{t.noQuests}</p>
                  <Button asChild variant="outline" className="mt-4">
-                    <Link href="/quests">Suggest a Quest!</Link>
+                    <Link href="/quests">{t.suggestQuest}</Link>
                  </Button>
             </CardContent>
           </Card>
@@ -213,27 +274,24 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
       <section>
         <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
           <Users className="mr-3 h-7 w-7 text-accent" />
-          Zone Mechanics
+          {t.zoneMechanics}
         </h2>
         <Card className="shadow-md rounded-lg">
           <CardContent className="pt-6">
-            <p className="text-muted-foreground">
-              Many quests in {zone.name} feature unique collaborative challenges like <span className="font-semibold text-accent">Collaboration Doors</span> (requiring synchronized answers or actions) and <span className="font-semibold text-accent">Broken Bridges</span> (demanding teamwork, resource sharing, or even point sacrifices for the greater good). These are designed to foster empathy, communication, and collective problem-solving.
-            </p>
+            <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: mechanicsDescHtml }} />
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-start p-4 border rounded-lg bg-card shadow-sm">
                     <Users className="h-8 w-8 text-primary mr-3 mt-1 shrink-0" />
                     <div>
-                        <h4 className="font-semibold text-card-foreground">Collaboration Doors</h4>
-                        <p className="text-sm text-muted-foreground">Two or more students must solve related puzzles or perform actions simultaneously to unlock the path forward. Communication is key!</p>
+                        <h4 className="font-semibold text-card-foreground">{t.collaborationDoors}</h4>
+                        <p className="text-sm text-muted-foreground">{t.collaborationDoorsDesc}</p>
                     </div>
                 </div>
                  <div className="flex items-start p-4 border rounded-lg bg-card shadow-sm">
-                    {/* Using a bridge-like SVG */}
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8 text-primary mr-3 mt-1 shrink-0"><path d="M5 12q0-1.5 1.063-2.562T8.625 8H5V6h3.625q.938 0 1.703.531t1.109 1.391L12 10l.562-2.078c.344-.86.82-1.39 1.703-1.39H20v2h-3.625q-1.5 0-2.562 1.063T12.75 12H19v2h-6.25q0 1.5-1.062 2.563T8.625 17.625H5v-2h3.625q1.5 0 2.563-1.062T12.25 12H5zM2 8l1-2m18 2l1-2m-1 14l1 2M2 18l1 2"/></svg>
                     <div>
-                        <h4 className="font-semibold text-card-foreground">Broken Bridges</h4>
-                        <p className="text-sm text-muted-foreground">The path is blocked! Team members might need to sacrifice points, share resources, or solve a collective mini-game for the group to cross.</p>
+                        <h4 className="font-semibold text-card-foreground">{t.brokenBridges}</h4>
+                        <p className="text-sm text-muted-foreground">{t.brokenBridgesDesc}</p>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -27,11 +27,109 @@ const questFormSchema = z.object({
 
 type QuestFormValues = z.infer<typeof questFormSchema>;
 
+const pageTranslations = {
+  en: {
+    title: "AI Dynamic Quest Generator",
+    description: "Craft personalized quests based on student needs or explore new topics. Select question types for more tailored learning experiences.",
+    studentLearningHistoryLabel: "Student Learning History (Optional)",
+    studentLearningHistoryPlaceholder: "e.g., Strong in algebra, struggles with geometry proofs. Recently studied trigonometry.",
+    studentLearningHistoryHelpText: "AI uses this to tailor questions. Integrated with LMS like Google Classroom in full version.",
+    topicLabel: "Quest Topic",
+    topicPlaceholder: "e.g., Photosynthesis, World War II, Python Loops",
+    questionTypeLabel: "Question Type",
+    questionTypePlaceholder: "Select question type",
+    openEnded: "Open-ended",
+    multipleChoice: "Multiple Choice",
+    fillInTheBlank: "Fill in the Blank",
+    difficultyLevelLabel: "Difficulty Level",
+    difficultyPlaceholder: "Select difficulty",
+    easy: "Easy",
+    medium: "Medium",
+    hard: "Hard",
+    numberOfQuestionsLabel: "Number of Questions (1-10)",
+    generateButton: "Generate Quests",
+    generatingButton: "Generating Quests...",
+    errorTitle: "Error",
+    generatedQuestsTitle: "Generated Quests",
+    questionLabel: (index: number, type: string) => `Question ${index + 1} (${type.replace('-', ' ')})`,
+    answerLabel: "Answer",
+    noQuestsYetTitle: "No Quests Yet",
+    noQuestsYetDescription: "Quests you generate will appear here. Fill out the form above and click \"Generate Quests\".",
+    toastSuccessTitle: "Quests Generated!",
+    toastSuccessDescription: (count: number) => `${count} new quests are ready.`,
+    toastNoQuestsTitle: "No Quests Generated",
+    toastNoQuestsDescription: "The AI did not return any quests. Please try different inputs.",
+    toastErrorTitle: "Error Generating Quests",
+  },
+  id: {
+    title: "Generator Misi Dinamis AI",
+    description: "Buat misi yang dipersonalisasi berdasarkan kebutuhan siswa atau jelajahi topik baru. Pilih jenis pertanyaan untuk pengalaman belajar yang lebih disesuaikan.",
+    studentLearningHistoryLabel: "Riwayat Belajar Siswa (Opsional)",
+    studentLearningHistoryPlaceholder: "misalnya, Kuat dalam aljabar, kesulitan dengan pembuktian geometri. Baru-baru ini mempelajari trigonometri.",
+    studentLearningHistoryHelpText: "AI menggunakan ini untuk menyesuaikan pertanyaan. Terintegrasi dengan LMS seperti Google Classroom dalam versi lengkap.",
+    topicLabel: "Topik Misi",
+    topicPlaceholder: "misalnya, Fotosintesis, Perang Dunia II, Perulangan Python",
+    questionTypeLabel: "Jenis Pertanyaan",
+    questionTypePlaceholder: "Pilih jenis pertanyaan",
+    openEnded: "Esai",
+    multipleChoice: "Pilihan Ganda",
+    fillInTheBlank: "Isian Singkat",
+    difficultyLevelLabel: "Tingkat Kesulitan",
+    difficultyPlaceholder: "Pilih kesulitan",
+    easy: "Mudah",
+    medium: "Sedang",
+    hard: "Sulit",
+    numberOfQuestionsLabel: "Jumlah Pertanyaan (1-10)",
+    generateButton: "Hasilkan Misi",
+    generatingButton: "Menghasilkan Misi...",
+    errorTitle: "Kesalahan",
+    generatedQuestsTitle: "Misi yang Dihasilkan",
+    questionLabel: (index: number, type: string) => `Pertanyaan ${index + 1} (${type.replace('-', ' ')})`,
+    answerLabel: "Jawaban",
+    noQuestsYetTitle: "Belum Ada Misi",
+    noQuestsYetDescription: "Misi yang Anda hasilkan akan muncul di sini. Isi formulir di atas dan klik \"Hasilkan Misi\".",
+    toastSuccessTitle: "Misi Dihasilkan!",
+    toastSuccessDescription: (count: number) => `${count} misi baru telah siap.`,
+    toastNoQuestsTitle: "Tidak Ada Misi yang Dihasilkan",
+    toastNoQuestsDescription: "AI tidak mengembalikan misi apa pun. Silakan coba input yang berbeda.",
+    toastErrorTitle: "Gagal Menghasilkan Misi",
+  }
+};
+
 export default function QuestsPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [generatedQuests, setGeneratedQuests] = useState<GeneratedQuestion[]>([]);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [lang, setLang] = useState<'en' | 'id'>('en');
+
+  useEffect(() => {
+    const updateLang = () => {
+      const savedSettings = localStorage.getItem('user-app-settings');
+      let newLang: 'en' | 'id' = 'en';
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          if (parsed.language && (parsed.language === 'en' || parsed.language === 'id')) {
+            newLang = parsed.language;
+          }
+        } catch (e) { console.error("Error reading lang for QuestsPage", e); }
+      }
+      setLang(newLang);
+    };
+
+    updateLang();
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'user-app-settings') {
+        updateLang();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const t = pageTranslations[lang];
 
   const form = useForm<QuestFormValues>({
     resolver: zodResolver(questFormSchema),
@@ -39,36 +137,47 @@ export default function QuestsPage() {
       topic: '',
       difficultyLevel: 'medium',
       numberOfQuestions: 3,
-      studentLearningHistory: 'Example: Student struggles with fractions but is strong in basic algebra. Recently covered geometry.',
+      studentLearningHistory: lang === 'id' 
+        ? 'Contoh: Siswa kesulitan dengan pecahan tetapi kuat dalam aljabar dasar. Baru-baru ini membahas geometri.'
+        : 'Example: Student struggles with fractions but is strong in basic algebra. Recently covered geometry.',
       questionType: 'open-ended',
     },
   });
+
+  // Update default placeholder when language changes and field is empty
+  useEffect(() => {
+    if (!form.getValues('studentLearningHistory')) {
+      form.setValue('studentLearningHistory', 
+        lang === 'id' 
+          ? 'Contoh: Siswa kesulitan dengan pecahan tetapi kuat dalam aljabar dasar. Baru-baru ini membahas geometri.'
+          : 'Example: Student struggles with fractions but is strong in basic algebra. Recently covered geometry.'
+      );
+    }
+  }, [lang, form]);
 
   const onSubmit: SubmitHandler<QuestFormValues> = async (data) => {
     setIsLoading(true);
     setGeneratedQuests([]);
     setGenerationError(null);
     try {
-      // Ensure data types match GenerateDynamicQuestsInput, especially numberOfQuestions
       const inputForAI: GenerateDynamicQuestsInput = {
         ...data,
         numberOfQuestions: Number(data.numberOfQuestions), 
-        questionType: data.questionType as QuestionType, // Zod enum handles this
+        questionType: data.questionType as QuestionType, 
       };
       const result = await generateDynamicQuestsAction(inputForAI);
       
       if (result.questions && result.questions.length > 0) {
         setGeneratedQuests(result.questions);
         toast({
-          title: 'Quests Generated!',
-          description: `${result.questions.length} new quests are ready.`,
+          title: t.toastSuccessTitle,
+          description: t.toastSuccessDescription(result.questions.length),
         });
       } else {
-        // This case might occur if the AI returns an empty list but no explicit error
-        setGenerationError('The AI generated no quests. Try adjusting your parameters.');
+        setGenerationError(t.toastNoQuestsDescription);
         toast({
-          title: 'No Quests Generated',
-          description: 'The AI did not return any quests. Please try different inputs.',
+          title: t.toastNoQuestsTitle,
+          description: t.toastNoQuestsDescription,
           variant: 'destructive',
         });
       }
@@ -77,7 +186,7 @@ export default function QuestsPage() {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred while generating quests.';
       setGenerationError(errorMessage);
       toast({
-        title: 'Error Generating Quests',
+        title: t.toastErrorTitle,
         description: errorMessage,
         variant: 'destructive',
       });
@@ -109,12 +218,11 @@ export default function QuestsPage() {
           <div>
             <p>{quest.questionWithBlank}</p>
             <p className="text-sm text-green-600">
-              Answer: <span className="font-semibold">{quest.answer}</span>
+              {t.answerLabel}: <span className="font-semibold">{quest.answer}</span>
             </p>
           </div>
         );
       default:
-        // Should not happen with discriminated union
         return <p>Unknown question type.</p>;
     }
   };
@@ -125,33 +233,32 @@ export default function QuestsPage() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Wand2 className="h-8 w-8 text-accent" />
-            <CardTitle className="font-headline text-3xl">AI Dynamic Quest Generator</CardTitle>
+            <CardTitle className="font-headline text-3xl">{t.title}</CardTitle>
           </div>
           <CardDescription>
-            Craft personalized quests based on student needs or explore new topics.
-            Select question types for more tailored learning experiences.
+            {t.description}
           </CardDescription>
         </CardHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
             <div>
-              <Label htmlFor="studentLearningHistory">Student Learning History (Optional)</Label>
+              <Label htmlFor="studentLearningHistory">{t.studentLearningHistoryLabel}</Label>
               <Textarea
                 id="studentLearningHistory"
-                placeholder="e.g., Strong in algebra, struggles with geometry proofs. Recently studied trigonometry."
+                placeholder={t.studentLearningHistoryPlaceholder}
                 {...form.register('studentLearningHistory')}
                 className="min-h-[100px]"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                AI uses this to tailor questions. Integrated with LMS like Google Classroom in full version.
+                {t.studentLearningHistoryHelpText}
               </p>
             </div>
 
             <div>
-              <Label htmlFor="topic">Quest Topic</Label>
+              <Label htmlFor="topic">{t.topicLabel}</Label>
               <Input
                 id="topic"
-                placeholder="e.g., Photosynthesis, World War II, Python Loops"
+                placeholder={t.topicPlaceholder}
                 {...form.register('topic')}
               />
               {form.formState.errors.topic && (
@@ -161,40 +268,40 @@ export default function QuestsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div>
-                <Label htmlFor="questionType">Question Type</Label>
+                <Label htmlFor="questionType">{t.questionTypeLabel}</Label>
                 <Select
                   onValueChange={(value) => form.setValue('questionType', value as QuestFormValues['questionType'])}
                   defaultValue={form.getValues('questionType')}
                 >
                   <SelectTrigger id="questionType">
-                    <SelectValue placeholder="Select question type" />
+                    <SelectValue placeholder={t.questionTypePlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="open-ended">Open-ended</SelectItem>
-                    <SelectItem value="multiple-choice">Multiple Choice</SelectItem>
-                    <SelectItem value="fill-in-the-blank">Fill in the Blank</SelectItem>
+                    <SelectItem value="open-ended">{t.openEnded}</SelectItem>
+                    <SelectItem value="multiple-choice">{t.multipleChoice}</SelectItem>
+                    <SelectItem value="fill-in-the-blank">{t.fillInTheBlank}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="difficultyLevel">Difficulty Level</Label>
+                <Label htmlFor="difficultyLevel">{t.difficultyLevelLabel}</Label>
                 <Select
                   onValueChange={(value) => form.setValue('difficultyLevel', value as 'easy' | 'medium' | 'hard')}
                   defaultValue={form.getValues('difficultyLevel')}
                 >
                   <SelectTrigger id="difficultyLevel">
-                    <SelectValue placeholder="Select difficulty" />
+                    <SelectValue placeholder={t.difficultyPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="easy">Easy</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="hard">Hard</SelectItem>
+                    <SelectItem value="easy">{t.easy}</SelectItem>
+                    <SelectItem value="medium">{t.medium}</SelectItem>
+                    <SelectItem value="hard">{t.hard}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
              <div>
-                <Label htmlFor="numberOfQuestions">Number of Questions (1-10)</Label>
+                <Label htmlFor="numberOfQuestions">{t.numberOfQuestionsLabel}</Label>
                 <Input
                   id="numberOfQuestions"
                   type="number"
@@ -214,7 +321,7 @@ export default function QuestsPage() {
               ) : (
                 <Wand2 className="mr-2 h-4 w-4" />
               )}
-              Generate Quests
+              {isLoading ? t.generatingButton : t.generateButton}
             </Button>
           </CardFooter>
         </form>
@@ -224,7 +331,7 @@ export default function QuestsPage() {
          <Card className="max-w-2xl mx-auto mt-8 shadow-xl">
           <CardHeader>
             <CardTitle className="font-headline text-2xl text-destructive flex items-center">
-              <AlertTriangle className="mr-2 h-6 w-6"/> Error
+              <AlertTriangle className="mr-2 h-6 w-6"/> {t.errorTitle}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -236,13 +343,13 @@ export default function QuestsPage() {
       {!generationError && generatedQuests.length > 0 && (
         <Card className="max-w-2xl mx-auto mt-8 shadow-xl">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl">Generated Quests</CardTitle>
+            <CardTitle className="font-headline text-2xl">{t.generatedQuestsTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
               {generatedQuests.map((quest, index) => (
                 <li key={index} className="p-4 bg-muted/50 rounded-md shadow-sm border border-border">
-                  <strong className="text-sm text-muted-foreground">Question {index + 1} ({quest.type.replace('-', ' ')})</strong>
+                  <strong className="text-sm text-muted-foreground">{t.questionLabel(index, quest.type)}</strong>
                   <div className="mt-1">
                     {renderQuestion(quest, index)}
                   </div>
@@ -255,10 +362,10 @@ export default function QuestsPage() {
        {!generationError && !isLoading && generatedQuests.length === 0 && form.formState.isSubmitted && (
          <Card className="max-w-2xl mx-auto mt-8 shadow-xl">
            <CardHeader>
-             <CardTitle className="font-headline text-xl">No Quests Yet</CardTitle>
+             <CardTitle className="font-headline text-xl">{t.noQuestsYetTitle}</CardTitle>
            </CardHeader>
            <CardContent>
-             <p className="text-muted-foreground">Quests you generate will appear here. Fill out the form above and click "Generate Quests".</p>
+             <p className="text-muted-foreground">{t.noQuestsYetDescription}</p>
            </CardContent>
          </Card>
        )}

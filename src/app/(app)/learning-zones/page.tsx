@@ -1,9 +1,11 @@
 
+'use client';
+
 import { ZoneCard } from '@/components/ZoneCard';
 import type { LearningZone } from '@/types';
-// Icons are no longer directly used here, they will be mapped in ZoneCard
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const allLearningZones: LearningZone[] = [
   { 
@@ -98,20 +100,60 @@ const allLearningZones: LearningZone[] = [
   },
 ];
 
-// This page will be a server component, so search functionality would ideally be client-side or use server actions.
-// For simplicity, we'll just display all zones. A real implementation would require state for search.
+const pageTranslations = {
+  en: {
+    title: "Explore Learning Zones",
+    description: "Dive into diverse subjects and embark on exciting educational adventures.",
+    searchPlaceholder: "Search zones (e.g., History, Math...)"
+  },
+  id: {
+    title: "Jelajahi Zona Belajar",
+    description: "Selami berbagai mata pelajaran dan mulailah petualangan edukatif yang seru.",
+    searchPlaceholder: "Cari zona (misalnya, Sejarah, Matematika...)"
+  }
+};
 
 export default function LearningZonesPage() {
+  const [lang, setLang] = useState<'en' | 'id'>('en');
+
+  useEffect(() => {
+    const updateLang = () => {
+      const savedSettings = localStorage.getItem('user-app-settings');
+      let newLang: 'en' | 'id' = 'en';
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          if (parsed.language && (parsed.language === 'en' || parsed.language === 'id')) {
+            newLang = parsed.language;
+          }
+        } catch (e) { console.error("Error reading lang for LearningZonesPage", e); }
+      }
+      setLang(newLang);
+    };
+
+    updateLang();
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'user-app-settings') {
+        updateLang();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+  
+  const t = pageTranslations[lang];
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
       <div className="mb-8">
-        <h1 className="font-headline text-3xl font-bold mb-2 text-foreground">Explore Learning Zones</h1>
-        <p className="text-lg text-muted-foreground">Dive into diverse subjects and embark on exciting educational adventures.</p>
+        <h1 className="font-headline text-3xl font-bold mb-2 text-foreground">{t.title}</h1>
+        <p className="text-lg text-muted-foreground">{t.description}</p>
         <div className="relative mt-6 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input 
               type="search" 
-              placeholder="Search zones (e.g., History, Math...)" 
+              placeholder={t.searchPlaceholder} 
               className="pl-10"
             />
         </div>
