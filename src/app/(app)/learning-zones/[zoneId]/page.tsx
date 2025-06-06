@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import type { LearningZone, Quest } from '@/types';
 import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, type LucideIcon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 
 const iconMap: Record<string, LucideIcon> = {
   History,
@@ -167,7 +167,8 @@ const pageTranslations = {
 };
 
 export default function LearningZoneDetailPage({ params }: { params: { zoneId: string } }) {
-  const zone = MOCK_ZONES[params.zoneId] || MOCK_ZONES['history']; // Fallback to history if not found
+  const resolvedParams = use(params);
+  const zone = MOCK_ZONES[resolvedParams.zoneId] || MOCK_ZONES['history']; // Fallback to history if not found
   const IconComponent = zone.iconKey ? iconMap[zone.iconKey] : null;
   const [lang, setLang] = useState<'en' | 'id'>('en');
 
@@ -301,3 +302,5 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
     </div>
   );
 }
+
+    
