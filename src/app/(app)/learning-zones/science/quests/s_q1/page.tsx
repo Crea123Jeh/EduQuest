@@ -7,10 +7,10 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Dna, FlaskConical, CheckCircle, RotateCcw, Wand2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Dna, FlaskConical, CheckCircle, RotateCcw, Wand2, Sparkles, Loader2 } from 'lucide-react';
+import { generateCreatureNameAction } from '@/lib/actions';
 
 const questDetails = {
   id: 's_q1',
@@ -94,21 +94,18 @@ type SelectedDnaTraits = {
 const pageTranslations = {
   en: {
     questTitle: "Creature Feature: Build-A-Beast",
-    questDescription: "Combine DNA samples to design and nurture your own unique creature. Will it be cute, cuddly, or catastrophically chaotic?",
+    questDescription: "Combine DNA samples to design and nurture your own unique creature. The AI will even name it for you!",
     zoneName: "Science Lab",
     backToZone: "Back to Science Lab",
     designConsoleTitle: "DNA Splicing Console",
-    creatureNameLabel: "Creature Name:",
-    creatureNamePlaceholder: "Enter your creature's name",
     selectTraitPlaceholder: "Select DNA Trait",
     creatureBlueprintTitle: "Creature Blueprint",
     creatureImageAlt: "Conceptual image of your designed creature",
     nurtureButton: "Nurture Creature",
-    nurturingButton: "Nurturing...",
+    nurturingButton: "Nurturing & Naming...",
     statusTitle: "Incubation Status",
-    statusInitial: "Select DNA traits, name your creature, and click 'Nurture Creature' to begin.",
-    statusNoSelection: "Please select a trait for each DNA category and name your creature.",
-    statusNoName: "Please name your creature before nurturing.",
+    statusInitial: "Select DNA traits and click 'Nurture Creature' to begin.",
+    statusNoSelection: "Please select a trait for each DNA category.",
     outcomeTitle: "Nurturing Report:",
     outcomeDefault: (name: string) => `${name} has developed! It seems unique.`,
     outcomeRobustAgile: (name: string) => `${name} is robust and agile, a formidable hunter perhaps!`,
@@ -120,7 +117,7 @@ const pageTranslations = {
     toastQuestCompletedTitle: "Creature Report Filed!",
     toastQuestCompletedDescription: (points: number, name: string) => `You earned ${points} points for your genetic masterpiece, ${name}!`,
     toastMissingTraitsTitle: "Incomplete DNA",
-    toastMissingTraitsDescription: "Select a trait for all categories and name your creature before nurturing.",
+    toastMissingTraitsDescription: "Select a trait for all categories before nurturing.",
     dnaCatBodyType: "Body Type",
     dnaCatLocomotion: "Locomotion",
     dnaCatSensory: "Sensory Organs",
@@ -167,25 +164,24 @@ const pageTranslations = {
     traitColorYellow: "Sunburst Yellow",
     descColorYellow: "A bright and cheerful yellow.",
     selectedTraitsTitle: "Selected DNA Traits:",
+    aiGeneratedNameLabel: "AI Generated Name:",
     noTraitsSelected: "No traits selected yet.",
+    aiNameGenerationError: "Could not generate an AI name. Using a default.",
   },
   id: {
     questTitle: "Fitur Makhluk: Ciptakan Monster",
-    questDescription: "Gabungkan sampel DNA untuk merancang dan memelihara makhluk unik Anda sendiri. Akankah ia lucu, menggemaskan, atau sangat kacau?",
+    questDescription: "Gabungkan sampel DNA untuk merancang dan memelihara makhluk unik Anda sendiri. AI bahkan akan menamakannya untuk Anda!",
     zoneName: "Laboratorium Sains",
     backToZone: "Kembali ke Lab Sains",
     designConsoleTitle: "Konsol Penyambungan DNA",
-    creatureNameLabel: "Nama Makhluk:",
-    creatureNamePlaceholder: "Masukkan nama makhluk Anda",
     selectTraitPlaceholder: "Pilih Sifat DNA",
     creatureBlueprintTitle: "Cetak Biru Makhluk",
     creatureImageAlt: "Gambar konseptual makhluk yang Anda rancang",
     nurtureButton: "Pelihara Makhluk",
-    nurturingButton: "Memelihara...",
+    nurturingButton: "Memelihara & Menamai...",
     statusTitle: "Status Inkubasi",
-    statusInitial: "Pilih sifat DNA, beri nama makhluk Anda, dan klik 'Pelihara Makhluk' untuk memulai.",
-    statusNoSelection: "Silakan pilih sifat untuk setiap kategori DNA dan beri nama makhluk Anda.",
-    statusNoName: "Silakan beri nama makhluk Anda sebelum memelihara.",
+    statusInitial: "Pilih sifat DNA dan klik 'Pelihara Makhluk' untuk memulai.",
+    statusNoSelection: "Silakan pilih sifat untuk setiap kategori DNA.",
     outcomeTitle: "Laporan Pemeliharaan:",
     outcomeDefault: (name: string) => `${name} telah berkembang! Tampaknya unik.`,
     outcomeRobustAgile: (name: string) => `${name} kuat dan lincah, mungkin pemburu yang tangguh!`,
@@ -197,7 +193,7 @@ const pageTranslations = {
     toastQuestCompletedTitle: "Laporan Makhluk Diajukan!",
     toastQuestCompletedDescription: (points: number, name: string) => `Anda mendapatkan ${points} poin untuk mahakarya genetik Anda, ${name}!`,
     toastMissingTraitsTitle: "DNA Tidak Lengkap",
-    toastMissingTraitsDescription: "Pilih sifat untuk semua kategori dan beri nama makhluk Anda sebelum memelihara.",
+    toastMissingTraitsDescription: "Pilih sifat untuk semua kategori sebelum memelihara.",
     dnaCatBodyType: "Tipe Tubuh",
     dnaCatLocomotion: "Penggerak",
     dnaCatSensory: "Organ Sensorik",
@@ -244,17 +240,19 @@ const pageTranslations = {
     traitColorYellow: "Kuning Mentari",
     descColorYellow: "Kuning cerah dan ceria.",
     selectedTraitsTitle: "Sifat DNA Terpilih:",
+    aiGeneratedNameLabel: "Nama Generasi AI:",
     noTraitsSelected: "Belum ada sifat yang dipilih.",
+    aiNameGenerationError: "Tidak dapat menghasilkan nama AI. Menggunakan nama default.",
   }
 };
 
 export default function CreatureFeatureQuestPage() {
-  const [creatureName, setCreatureName] = useState<string>('');
   const [selectedTraits, setSelectedTraits] = useState<SelectedDnaTraits>({});
   const [isNurturing, setIsNurturing] = useState(false);
   const [nurturingStatus, setNurturingStatus] = useState<string>('');
-  const [nurturingOutcome, setNurturingOutcome] = useState<{ messageKey: string, details?: string } | null>(null);
+  const [nurturingOutcome, setNurturingOutcome] = useState<{ messageKey: string, characteristicSummary: string, aiName: string } | null>(null);
   const [questAttempted, setQuestAttempted] = useState(false);
+  const [aiGeneratedName, setAiGeneratedName] = useState<string | null>(null);
   
   const [lang, setLang] = useState<'en' | 'id'>('en');
   const { toast } = useToast();
@@ -296,6 +294,7 @@ export default function CreatureFeatureQuestPage() {
     setSelectedTraits(prev => ({ ...prev, [categoryKey]: traitId }));
     setQuestAttempted(false); 
     setNurturingOutcome(null);
+    setAiGeneratedName(null);
     setNurturingStatus(t.statusInitial);
   };
 
@@ -312,28 +311,18 @@ export default function CreatureFeatureQuestPage() {
   };
   
   const creatureImageText = useMemo(() => {
-    if (!creatureName.trim() && !allCategoriesSelected) return "DESIGN_YOUR_BEAST";
-    if (!creatureName.trim()) return "NAME_YOUR_BEAST";
-    if (!allCategoriesSelected) return `${creatureName.toUpperCase()}_INCOMPLETE_DNA`;
-    if (isNurturing) return `${creatureName.toUpperCase()}_NURTURING`;
-    if (nurturingOutcome) return `${creatureName.toUpperCase()}_${t[nurturingOutcome.messageKey as keyof typeof t](creatureName).substring(0,15).toUpperCase().replace(/\s/g, '_')}`;
+    if (!allCategoriesSelected) return "DESIGN_YOUR_BEAST";
+    if (isNurturing) return "NURTURING_&_NAMING...";
+    if (nurturingOutcome && aiGeneratedName) return `${aiGeneratedName.toUpperCase().replace(/\s/g, '_')}_READY`;
+    if (nurturingOutcome) return "AWAITING_NAME"; // Fallback if name not yet set but outcome exists
     
-    const body = getSelectedTraitName('bodyType')?.substring(0,5) || "BODY";
-    const color = getSelectedTraitName('primaryColor')?.substring(0,5) || "COLOR";
-    return `${creatureName.toUpperCase()}_${color}_${body}`;
-  }, [allCategoriesSelected, isNurturing, nurturingOutcome, selectedTraits, t, creatureName]);
+    const body = getSelectedTraitName('bodyType')?.substring(0,5).toUpperCase() || "BODY";
+    const color = getSelectedTraitName('primaryColor')?.substring(0,5).toUpperCase() || "COLOR";
+    return `NEW_CREATURE_${color}_${body}`;
+  }, [allCategoriesSelected, isNurturing, nurturingOutcome, selectedTraits, t, aiGeneratedName]);
 
 
-  const handleNurture = () => {
-    if (!creatureName.trim()) {
-      setNurturingStatus(t.statusNoName);
-      toast({
-        title: t.toastMissingTraitsTitle,
-        description: t.statusNoName,
-        variant: 'destructive',
-      });
-      return;
-    }
+  const handleNurture = async () => {
     if (!allCategoriesSelected) {
       setNurturingStatus(t.statusNoSelection);
       toast({
@@ -346,47 +335,75 @@ export default function CreatureFeatureQuestPage() {
 
     setIsNurturing(true);
     setNurturingOutcome(null);
+    setAiGeneratedName(null);
     setNurturingStatus(t.nurturingButton);
 
-    setTimeout(() => {
-      let outcomeKey = 'outcomeDefault';
-      if (selectedTraits['bodyType'] === 'b1' && selectedTraits['locomotion'] === 'l1') {
-        outcomeKey = 'outcomeRobustAgile';
-      } else if (selectedTraits['bodyType'] === 'b2' && selectedTraits['locomotion'] === 'l2' && selectedTraits['sensory'] === 's2') {
-        outcomeKey = 'outcomeSlenderWingedSonar';
-      } else if (selectedTraits['adaptation'] === 'a3' && selectedTraits['sensory'] === 's3') {
-        outcomeKey = 'outcomeArmoredAntennae';
-      } else if (selectedTraits['adaptation'] === 'a2' && selectedTraits['locomotion'] === 'l3' && selectedTraits['primaryColor'] === 'c2') {
-        outcomeKey = 'outcomeBioluminescentFins';
+    // Simulate characteristic generation
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    let outcomeKey = 'outcomeDefault';
+    let characteristicSummary = t.outcomeDefault("A creature"); // Default summary
+    if (selectedTraits['bodyType'] === 'b1' && selectedTraits['locomotion'] === 'l1') {
+      outcomeKey = 'outcomeRobustAgile';
+      characteristicSummary = t.outcomeRobustAgile("This creature");
+    } else if (selectedTraits['bodyType'] === 'b2' && selectedTraits['locomotion'] === 'l2' && selectedTraits['sensory'] === 's2') {
+      outcomeKey = 'outcomeSlenderWingedSonar';
+      characteristicSummary = t.outcomeSlenderWingedSonar("This creature");
+    } else if (selectedTraits['adaptation'] === 'a3' && selectedTraits['sensory'] === 's3') {
+      outcomeKey = 'outcomeArmoredAntennae';
+      characteristicSummary = t.outcomeArmoredAntennae("This creature");
+    } else if (selectedTraits['adaptation'] === 'a2' && selectedTraits['locomotion'] === 'l3' && selectedTraits['primaryColor'] === 'c2') {
+      outcomeKey = 'outcomeBioluminescentFins';
+      characteristicSummary = t.outcomeBioluminescentFins("This creature");
+    }
+    // Remove the placeholder name part for AI input
+    characteristicSummary = characteristicSummary.replace("This creature is ", "").replace("A creature named This creature ", "").replace("A beautiful creature, This creature, ", "").replace("This creature, this heavily armored creature, ", "").replace(" has developed! It seems unique.", "").replace(" is robust and agile, a formidable hunter perhaps!", "").replace(" with keen sonar emerges. It's an agile aerial navigator!", "").replace(" uses its antennae to sense the world. A resilient survivor!", "").replace(" with bioluminescent fins that gracefully swims. Truly enchanting!", "");
+
+
+    // Prepare traits for AI
+    const dnaTraitsForAI: Record<string, string> = {};
+    DNA_CATEGORIES.forEach(cat => {
+      const categoryName = t[cat.nameKey as keyof typeof t] || cat.nameKey;
+      const traitName = getSelectedTraitName(cat.key);
+      if (traitName) {
+        dnaTraitsForAI[categoryName] = traitName;
       }
-      
-      const selectedTraitNames = DNA_CATEGORIES.map(cat => {
-        const traitId = selectedTraits[cat.key];
-        const trait = cat.traits.find(tr => tr.id === traitId);
-        return trait ? (t[trait.nameKey as keyof typeof t] || trait.nameKey) : 'Unknown';
-      }).join(', ');
-      
-      const outcomeDetails = `${t.selectedTraitsTitle} ${selectedTraitNames}.`;
-      const finalCreatureName = creatureName.trim() || "Creature";
-      
-      setNurturingOutcome({ messageKey: outcomeKey, details: outcomeDetails });
-      setNurturingStatus(t[outcomeKey as keyof typeof t](finalCreatureName) || "Nurturing complete.");
-      setIsNurturing(false);
-      setQuestAttempted(true);
-    }, 2000);
+    });
+
+    let finalAiName = "Mysteria"; // Default AI name
+    try {
+      const nameResult = await generateCreatureNameAction({
+        dnaTraits: dnaTraitsForAI,
+        creatureCharacteristics: characteristicSummary,
+      });
+      finalAiName = nameResult.generatedName;
+      setAiGeneratedName(finalAiName);
+    } catch (error) {
+      console.error("AI Name generation error:", error);
+      toast({
+        title: "AI Name Error",
+        description: t.aiNameGenerationError,
+        variant: "destructive",
+      });
+    }
+    
+    setNurturingOutcome({ messageKey: outcomeKey, characteristicSummary, aiName: finalAiName });
+    setNurturingStatus(t[outcomeKey as keyof typeof t](finalAiName) || "Nurturing complete.");
+    setIsNurturing(false);
+    setQuestAttempted(true);
   };
 
   const handleRestartDesign = () => {
-    setCreatureName('');
     setSelectedTraits({});
     setNurturingStatus(t.statusInitial);
     setNurturingOutcome(null);
+    setAiGeneratedName(null);
     setQuestAttempted(false);
     setIsNurturing(false);
   };
 
   const handleCompleteQuest = () => {
-    const finalCreatureName = creatureName.trim() || "your creature";
+    const finalCreatureName = aiGeneratedName || "your creature";
     toast({
       title: t.toastQuestCompletedTitle,
       description: t.toastQuestCompletedDescription(questDetails.points, finalCreatureName),
@@ -423,16 +440,6 @@ export default function CreatureFeatureQuestPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="creatureName" className="text-base font-semibold block mb-1">{t.creatureNameLabel}</Label>
-              <Input 
-                id="creatureName"
-                value={creatureName}
-                onChange={(e) => setCreatureName(e.target.value)}
-                placeholder={t.creatureNamePlaceholder}
-                disabled={isNurturing}
-              />
-            </div>
             {DNA_CATEGORIES.map(category => (
               <div key={category.key}>
                 <label htmlFor={category.key} className="text-base font-semibold block mb-1">
@@ -465,10 +472,10 @@ export default function CreatureFeatureQuestPage() {
           <CardFooter>
             <Button 
               onClick={handleNurture} 
-              disabled={isNurturing || !allCategoriesSelected || questAttempted || !creatureName.trim()} 
+              disabled={isNurturing || !allCategoriesSelected || questAttempted} 
               className="w-full"
             >
-              <Sparkles className="mr-2 h-4 w-4" />
+              {isNurturing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
               {isNurturing ? t.nurturingButton : t.nurtureButton}
             </Button>
           </CardFooter>
@@ -493,7 +500,10 @@ export default function CreatureFeatureQuestPage() {
                 key={creatureImageText} 
               />
                <div className="mt-4 text-left">
-                <h4 className="font-semibold mb-2">{creatureName ? `${creatureName}'s ${t.selectedTraitsTitle}` : t.selectedTraitsTitle}</h4>
+                {aiGeneratedName && nurturingOutcome && (
+                  <h3 className="font-bold text-xl text-accent mb-2">{t.aiGeneratedNameLabel} {aiGeneratedName}</h3>
+                )}
+                <h4 className="font-semibold mb-2">{t.selectedTraitsTitle}</h4>
                 {Object.keys(selectedTraits).length > 0 ? (
                   <ul className="space-y-1 text-sm text-muted-foreground list-disc list-inside">
                     {DNA_CATEGORIES.map(cat => {
@@ -516,8 +526,8 @@ export default function CreatureFeatureQuestPage() {
               <p className={`text-center p-4 rounded-md ${!nurturingOutcome ? 'bg-muted' : ''}`}>
                 {nurturingStatus}
               </p>
-              {nurturingOutcome && nurturingOutcome.details && (
-                <p className="text-xs text-muted-foreground mt-2 text-center">{nurturingOutcome.details}</p>
+              {nurturingOutcome && nurturingOutcome.characteristicSummary && !aiGeneratedName && (
+                <p className="text-xs text-muted-foreground mt-2 text-center">{nurturingOutcome.characteristicSummary}</p>
               )}
             </CardContent>
           </Card>

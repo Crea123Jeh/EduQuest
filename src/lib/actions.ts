@@ -3,6 +3,9 @@
 
 import { generateDynamicQuests as genkitGenerateDynamicQuests } from '@/ai/flows/generate-dynamic-quests';
 import type { GenerateDynamicQuestsInput, GenerateDynamicQuestsOutput } from '@/ai/flows/generate-dynamic-quests';
+import { generateCreatureName as genkitGenerateCreatureName } from '@/ai/flows/generate-creature-name-flow';
+import type { GenerateCreatureNameInput, GenerateCreatureNameOutput } from '@/ai/flows/generate-creature-name-flow';
+
 
 export async function generateDynamicQuestsAction(
   input: GenerateDynamicQuestsInput
@@ -35,6 +38,25 @@ export async function generateDynamicQuestsAction(
       throw new Error(`Failed to generate quests: ${error.message}`);
     }
     throw new Error('An unknown error occurred while generating quests.');
+  }
+}
+
+export async function generateCreatureNameAction(
+  input: GenerateCreatureNameInput
+): Promise<GenerateCreatureNameOutput> {
+  try {
+    const result = await genkitGenerateCreatureName(input);
+    if (!result || !result.generatedName) {
+      console.error('Error generating creature name: AI flow returned invalid data structure.', result);
+      throw new Error('AI failed to return a creature name.');
+    }
+    return result;
+  } catch (error) {
+    console.error('Error in generateCreatureNameAction:', error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to generate creature name: ${error.message}`);
+    }
+    throw new Error('An unknown error occurred while generating the creature name.');
   }
 }
 
