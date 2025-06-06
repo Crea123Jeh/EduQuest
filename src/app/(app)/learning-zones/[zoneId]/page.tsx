@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import type { LearningZone, Quest } from '@/types';
 import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, Beaker, Lightbulb, type LucideIcon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react'; // Added React.use here
 
 const iconMap: Record<string, LucideIcon> = {
   History,
@@ -185,7 +185,8 @@ const pageTranslations = {
 };
 
 export default function LearningZoneDetailPage({ params }: { params: { zoneId: string } }) {
-  const zone = MOCK_ZONES[params.zoneId] || MOCK_ZONES['history']; 
+  const resolvedParams = use(params); // Unwrap params
+  const zone = MOCK_ZONES[resolvedParams.zoneId] || MOCK_ZONES['history']; 
   const IconComponent = zone.iconKey ? iconMap[zone.iconKey] : null;
   const [lang, setLang] = useState<'en' | 'id'>('en');
 
@@ -216,7 +217,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
   }, []);
 
   const t = pageTranslations[lang];
-  const mechanicsDescHtml = t.mechanicsDescription.replace('{zoneName}', zone.name);;
+  const mechanicsDescHtml = t.mechanicsDescription.replace('{zoneName}', zone.name);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
@@ -266,7 +267,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full">
-                    <Link href={`/learning-zones/${zone.id}/quests/${quest.id}`}>
+                    <Link href={`/learning-zones/${resolvedParams.zoneId}/quests/${quest.id}`}>
                       {t.startQuest} <Zap className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -315,7 +316,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
         </Card>
       </section>
 
-      {zone.id === 'science' && (
+      {resolvedParams.zoneId === 'science' && (
         <section className="mt-12">
           <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
             <Beaker className="mr-3 h-7 w-7 text-accent" />
@@ -342,7 +343,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
         </section>
       )}
 
-      {zone.id === 'math' && (
+      {resolvedParams.zoneId === 'math' && (
         <section className="mt-12">
           <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
             <Lightbulb className="mr-3 h-7 w-7 text-accent" />
@@ -371,5 +372,6 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
     </div>
   );
 }
+    
 
     
