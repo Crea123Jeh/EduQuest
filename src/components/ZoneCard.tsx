@@ -6,12 +6,25 @@ import Link from 'next/link';
 import type { LearningZone } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, History, Calculator, FlaskConical, Globe, Palette, Music, Languages, Rocket, Atom, BrainCog, type LucideIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface ZoneCardProps {
   zone: LearningZone;
 }
+
+const iconMap: Record<string, LucideIcon> = {
+  History,
+  Calculator,
+  FlaskConical,
+  Globe,
+  Palette,
+  Music,
+  Languages,
+  Rocket,
+  Atom,
+  BrainCog,
+};
 
 const cardTranslations = {
   en: {
@@ -23,7 +36,7 @@ const cardTranslations = {
 };
 
 export function ZoneCard({ zone }: ZoneCardProps) {
-  const IconComponent = zone.icon;
+  const IconComponent = zone.iconKey ? iconMap[zone.iconKey] : null;
   const [lang, setLang] = useState<'en' | 'id'>('en');
 
   useEffect(() => {

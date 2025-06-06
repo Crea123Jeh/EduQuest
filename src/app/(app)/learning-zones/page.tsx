@@ -1,7 +1,7 @@
 
 import { ZoneCard } from '@/components/ZoneCard';
 import type { LearningZone } from '@/types';
-import { History, Calculator, FlaskConical, Globe, Palette, Music, Languages, Rocket, Atom, BrainCog } from 'lucide-react';
+// Icons are no longer directly used here, they will be mapped in ZoneCard
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
@@ -10,7 +10,7 @@ const allLearningZones: LearningZone[] = [
     id: 'history', 
     name: 'History Zone: Time Travelers\' Guild', 
     description: 'Unravel mysteries of the past, from ancient pharaohs to space-age pioneers! Decode hieroglyphs, lead revolutions, and rewrite history (or try to!).', 
-    icon: History, 
+    iconKey: 'History', 
     subject: 'History', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'time machine portal' 
@@ -19,7 +19,7 @@ const allLearningZones: LearningZone[] = [
     id: 'math', 
     name: 'Mathematics Realm: Number Ninjas\' Dojo', 
     description: 'Sharpen your skills in logic, patterns, and puzzles. Become a math master by cracking codes and solving mind-bending geometric challenges!', 
-    icon: Calculator, 
+    iconKey: 'Calculator', 
     subject: 'Mathematics', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'ninja math symbols' 
@@ -28,7 +28,7 @@ const allLearningZones: LearningZone[] = [
     id: 'science', 
     name: 'Science Lab: Mad Scientist\'s Workshop', 
     description: 'Mix, build, and experiment! Discover the secrets of the universe, from bubbling potions to miniature black holes (safely, of course!).', 
-    icon: FlaskConical, 
+    iconKey: 'FlaskConical', 
     subject: 'Science', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'mad scientist lab' 
@@ -37,7 +37,7 @@ const allLearningZones: LearningZone[] = [
     id: 'geography', 
     name: 'World Explorer: The Cartographer\'s Compass', 
     description: 'Embark on global expeditions, discover hidden wonders, and map uncharted territories. Navigate treacherous terrains and meet diverse cultures!', 
-    icon: Globe, 
+    iconKey: 'Globe', 
     subject: 'Geography', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'vintage world map' 
@@ -46,7 +46,7 @@ const allLearningZones: LearningZone[] = [
     id: 'art', 
     name: 'Art Studio: The Dream Weaver\'s Canvas', 
     description: 'Paint, sculpt, and animate your wildest imaginations into reality. Bring mythical creatures to life or design futuristic cities!', 
-    icon: Palette, 
+    iconKey: 'Palette', 
     subject: 'Art', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'fantasy art studio' 
@@ -55,7 +55,7 @@ const allLearningZones: LearningZone[] = [
     id: 'music', 
     name: 'Music Hall: The Maestro\'s Symphony', 
     description: 'Compose epic scores, jam with virtual instruments, and conduct your own orchestra. Create chart-topping hits or serene soundscapes.', 
-    icon: Music, 
+    iconKey: 'Music', 
     subject: 'Music', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'grand concert hall' 
@@ -64,7 +64,7 @@ const allLearningZones: LearningZone[] = [
     id: 'languages', 
     name: 'Language Hub: The Polyglot\'s Portal', 
     description: 'Converse with characters from around the world, translate ancient texts, and unlock the power of words in exciting narrative adventures.', 
-    icon: Languages, 
+    iconKey: 'Languages', 
     subject: 'Languages', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'ancient library scrolls' 
@@ -73,7 +73,7 @@ const allLearningZones: LearningZone[] = [
     id: 'technology', 
     name: 'Tech Hub: Future Innovators\' Garage', 
     description: 'Code robots, design virtual worlds, and explore the cutting edge of technology. Build the next big app or secure a digital fortress!', 
-    icon: Rocket, 
+    iconKey: 'Rocket', 
     subject: 'Technology', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'futuristic tech garage' 
@@ -82,7 +82,7 @@ const allLearningZones: LearningZone[] = [
     id: 'physics', 
     name: 'Physics Playground: Quantum Leap Lab', 
     description: 'Bend the laws of physics! Experiment with gravity, light, and energy in mind-bending simulations and challenges.', 
-    icon: Atom, 
+    iconKey: 'Atom', 
     subject: 'Physics', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'quantum physics simulation' 
@@ -91,7 +91,7 @@ const allLearningZones: LearningZone[] = [
     id: 'psychology', 
     name: 'Mind Maze: The Empathy Engine', 
     description: 'Navigate complex social scenarios, understand human behavior, and build your emotional intelligence through interactive stories.', 
-    icon: BrainCog, 
+    iconKey: 'BrainCog', 
     subject: 'Psychology', 
     image: 'https://placehold.co/400x250.png', 
     aiHint: 'abstract mind maze' 

@@ -7,14 +7,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ZoneCard } from '@/components/ZoneCard';
 import { ClassroomCard } from '@/components/ClassroomCard';
 import type { LearningZone, Classroom, Quest } from '@/types';
-import { History, Calculator, FlaskConical, ArrowRight, BookOpenCheck, Users, Puzzle } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Users, Puzzle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 // Mock Data - In a real app, this data might also need i18n if names/descriptions change
 const learningZones: LearningZone[] = [
-  { id: 'history', name: 'History Zone', description: 'Explore ancient civilizations and pivotal historical events.', icon: History, subject: 'History', image: 'https://placehold.co/400x250.png', aiHint: 'history ancient' },
-  { id: 'math', name: 'Mathematics Realm', description: 'Solve intriguing puzzles and master mathematical concepts.', icon: Calculator, subject: 'Mathematics', image: 'https://placehold.co/400x250.png', aiHint: 'math abstract' },
-  { id: 'science', name: 'Science Lab', description: 'Conduct experiments and discover the wonders of science.', icon: FlaskConical, subject: 'Science', image: 'https://placehold.co/400x250.png', aiHint: 'science laboratory' },
+  { id: 'history', name: 'History Zone', description: 'Explore ancient civilizations and pivotal historical events.', iconKey: 'History', subject: 'History', image: 'https://placehold.co/400x250.png', aiHint: 'history ancient' },
+  { id: 'math', name: 'Mathematics Realm', description: 'Solve intriguing puzzles and master mathematical concepts.', iconKey: 'Calculator', subject: 'Mathematics', image: 'https://placehold.co/400x250.png', aiHint: 'math abstract' },
+  { id: 'science', name: 'Science Lab', description: 'Conduct experiments and discover the wonders of science.', iconKey: 'FlaskConical', subject: 'Science', image: 'https://placehold.co/400x250.png', aiHint: 'science laboratory' },
 ];
 
 const classrooms: Classroom[] = [

@@ -5,15 +5,28 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { LearningZone, Quest } from '@/types';
-import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages } from 'lucide-react';
-import { History, Calculator, FlaskConical } from 'lucide-react'; // Example icons
+import { ArrowLeft, Users, Puzzle, Star, Zap, BookOpen, Atom, BrainCog, Rocket, Globe, Palette, Music, Languages, History, Calculator, FlaskConical, type LucideIcon } from 'lucide-react';
+
+// Define the icon map
+const iconMap: Record<string, LucideIcon> = {
+  History,
+  Calculator,
+  FlaskConical,
+  Globe,
+  Palette,
+  Music,
+  Languages,
+  Rocket,
+  Atom,
+  BrainCog,
+};
 
 // Mock Data - In a real app, this would be fetched based on params.zoneId
-const MOCK_ZONES: Record<string, LearningZone> = {
-  history: { 
+const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
+  { 
     id: 'history', name: 'History Zone: Time Travelers\' Guild HQ', 
     description: 'Welcome, Time Agent! Your mission, should you choose to accept it, involves navigating pivotal moments in history. From decoding ancient scrolls in Egypt to strategizing D-Day landings, your choices will shape the past (or at least your grade!). Watch out for temporal paradoxes!', 
-    icon: History, subject: 'History', 
+    iconKey: 'History', subject: 'History', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'ancient library time portal',
     quests: [
@@ -22,10 +35,10 @@ const MOCK_ZONES: Record<string, LearningZone> = {
       { id: 'h_q3', title: 'Ethical Dilemma: The Revolutionary\'s Choice', description: 'You\'ve uncovered a plot that could change a nation. Expose it and risk chaos, or stay silent and maintain order? The fate of many rests on your decision.', zoneId: 'history', type: 'Ethical Dilemma', difficulty: 'Hard', points: 100 },
     ]
   },
-  math: { 
+  { 
     id: 'math', name: 'Mathematics Realm: The Number Ninjas\' Citadel', 
     description: 'Master the art of calculation and logic in this high-tech dojo. Solve cryptic numerical puzzles, duel with equation-wielding robots, and prove your worth as a true Number Ninja. Only the sharpest minds will prevail!', 
-    icon: Calculator, subject: 'Mathematics', 
+    iconKey: 'Calculator', subject: 'Mathematics', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'futuristic dojo numbers',
     quests: [
@@ -34,10 +47,10 @@ const MOCK_ZONES: Record<string, LearningZone> = {
       { id: 'm_q3', title: 'The Infinite Labyrinth of Pi', description: 'Navigate a maze where each turn is decided by a digit of Pi. How far can you go before getting lost in infinity?', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 170 },
     ]
   },
-   science: { 
+   { 
     id: 'science', name: 'Science Lab: The Mad Scientist\'s Playground', 
     description: 'Don your lab coat and goggles! Here, you\'ll concoct explosive potions (safely!), build bizarre contraptions, and maybe even reanimate a friendly creature or two. Expect the unexpected, and remember: it\'s not a mistake, it\'s a discovery!', 
-    icon: FlaskConical, subject: 'Science', 
+    iconKey: 'FlaskConical', subject: 'Science', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'quirky science lab',
     quests: [
@@ -46,80 +59,87 @@ const MOCK_ZONES: Record<string, LearningZone> = {
       { id: 's_q3', title: 'Rocket Launch: To the Mun and Back!', description: 'Design, build, and launch a miniature rocket. Calculate trajectories and fuel consumption to land safely on the class "Mun".', zoneId: 'science', type: 'Individual', difficulty: 'Medium', points: 150 },
     ]
   },
-  geography: { 
+  { 
     id: 'geography', name: 'World Explorer: The Cartographer\'s Compass HQ', 
     description: 'Grab your compass and map! Explore dense jungles, navigate vast oceans, and scale towering mountains. Discover ancient ruins and document unique cultures. Adventure awaits at every coordinate!', 
-    icon: Globe, subject: 'Geography', 
+    iconKey: 'Globe', subject: 'Geography', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'explorer map jungle',
     quests: [
       { id: 'g_q1', title: 'The Lost City of El Dorado', description: 'Follow ancient clues to find the legendary city of gold. Beware of treacherous terrain and rival explorers!', zoneId: 'geography', type: 'Individual', difficulty: 'Hard', points: 200 },
     ]
   },
-  art: { 
+  { 
     id: 'art', name: 'Art Studio: The Dream Weaver\'s Workshop', 
     description: 'Your imagination is the only limit! Sculpt mythical beasts from digital clay, paint vibrant murals on virtual walls, or animate epic tales. Let your creativity flow and inspire the world!', 
-    icon: Palette, subject: 'Art', 
+    iconKey: 'Palette', subject: 'Art', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'fantasy art tools',
     quests: [
       { id: 'a_q1', title: 'Mural of Myths', description: 'Collaborate to create a massive digital mural depicting legendary creatures and epic battles.', zoneId: 'art', type: 'Collaborative', difficulty: 'Medium', points: 160 },
     ]
   },
-  music: { 
+  { 
     id: 'music', name: 'Music Hall: The Maestro\'s Grand Stage', 
     description: 'Compose chart-topping hits, conduct virtual orchestras, or master exotic instruments. From classical symphonies to futuristic synth-scapes, the stage is yours!', 
-    icon: Music, subject: 'Music', 
+    iconKey: 'Music', subject: 'Music', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'futuristic music stage',
     quests: [
        { id: 'mu_q1', title: 'Symphony of the Stars', description: 'Compose an original piece of music inspired by the cosmos. Use unique sound effects to represent planets and nebulae.', zoneId: 'music', type: 'Individual', difficulty: 'Hard', points: 180 },
     ]
   },
-  languages: { 
+  { 
     id: 'languages', name: 'Language Hub: The Polyglot\'s Portal Chamber', 
     description: 'Step through portals to converse with historical figures, negotiate with alien diplomats, or decipher ancient texts. Master new tongues and unlock global secrets!', 
-    icon: Languages, subject: 'Languages', 
+    iconKey: 'Languages', subject: 'Languages', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'glowing language portal',
     quests: [
        { id: 'l_q1', title: 'The Rosetta Stone Riddle', description: 'Translate a series of cryptic messages in three different ancient languages to unlock a hidden treasure.', zoneId: 'languages', type: 'Individual', difficulty: 'Hard', points: 190 },
     ]
   },
-  technology: { 
+  { 
     id: 'technology', name: 'Tech Hub: Future Innovators\' Command Center', 
     description: 'Code AI assistants, design smart cities, or defend against cyber threats in this high-tech sandbox. The future is in your hands – build it, break it, and rebuild it better!', 
-    icon: Rocket, subject: 'Technology', 
+    iconKey: 'Rocket', subject: 'Technology', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'holographic tech interface',
     quests: [
        { id: 't_q1', title: 'AI Uprising: Code Red', description: 'A rogue AI is causing chaos! Collaborate to debug its code and restore order before it takes over the network.', zoneId: 'technology', type: 'Collaborative', difficulty: 'Hard', points: 220 },
     ]
   },
-  physics: { 
+  { 
     id: 'physics', name: 'Physics Playground: Quantum Leap Lab Complex', 
     description: 'Defy gravity, bend light, and explore the bizarre world of quantum mechanics. Conduct experiments that would make Einstein jealous, but try not to create any black holes in the classroom!', 
-    icon: Atom, subject: 'Physics', 
+    iconKey: 'Atom', subject: 'Physics', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'anti gravity chamber',
     quests: [
        { id: 'p_q1', title: 'The Wormhole Wobble', description: 'Stabilize a miniature wormhole by correctly applying principles of general relativity. Get it wrong, and who knows where you\'ll end up!', zoneId: 'physics', type: 'Individual', difficulty: 'Hard', points: 210 },
     ]
   },
-  psychology: { 
+  { 
     id: 'psychology', name: 'Mind Maze: The Empathy Engine Labyrinth', 
     description: 'Navigate intricate social scenarios, understand diverse perspectives, and master the art of emotional intelligence. Can you solve the human puzzle?', 
-    icon: BrainCog, subject: 'Psychology', 
+    iconKey: 'BrainCog', subject: 'Psychology', 
     image: 'https://placehold.co/1200x400.png', 
     aiHint: 'surreal brain landscape',
     quests: [
        { id: 'ps_q1', title: 'The Empathy Test', description: 'Experience a day in someone else\'s shoes through an advanced simulation. Make choices that demonstrate understanding and compassion to pass.', zoneId: 'psychology', type: 'Individual', difficulty: 'Medium', points: 140 },
     ]
   },
-};
+];
+
+const MOCK_ZONES: Record<string, LearningZone> = MOCK_ZONES_DATA.reduce((acc, zone) => {
+  acc[zone.id] = zone;
+  return acc;
+}, {} as Record<string, LearningZone>);
+
 
 export default function LearningZoneDetailPage({ params }: { params: { zoneId: string } }) {
   const zone = MOCK_ZONES[params.zoneId] || MOCK_ZONES['history']; // Fallback to history if not found
+  const IconComponent = zone.iconKey ? iconMap[zone.iconKey] : null;
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
@@ -141,7 +161,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         <div className="absolute bottom-0 left-0 p-6 md:p-8">
-          {zone.icon && <zone.icon className="h-12 w-12 text-white mb-2" />}
+          {IconComponent && <IconComponent className="h-12 w-12 text-white mb-2" />}
           <h1 className="font-headline text-3xl md:text-4xl font-bold text-white">{zone.name}</h1>
           <p className="text-lg text-gray-200 mt-1 max-w-3xl">{zone.description}</p>
         </div>

@@ -1,8 +1,9 @@
+
 export interface LearningZone {
   id: string;
   name: string;
   description: string;
-  icon?: React.ElementType; // Lucide icon component
+  iconKey?: string; // Changed from React.ElementType to string
   subject: string;
   image: string;
   aiHint: string;
