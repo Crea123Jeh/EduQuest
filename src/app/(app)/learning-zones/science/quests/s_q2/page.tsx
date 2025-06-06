@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Wand2, Droplets, Wind, Leaf, PackageSearch, CheckCircle, XCircle, RotateCcw, AlertTriangle, FlaskConical, Recycle, Microscope, Sprout, Bug } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label'; // Added import
+import { Label } from '@/components/ui/label';
 
 const questDetails = {
   id: 's_q2',
@@ -419,7 +419,7 @@ export default function EcoChallengeQuestPage() {
               
               let tooltipContent = t[action.descriptionKey as keyof typeof t] || action.descriptionKey;
               if (isDisabledByPrereq) {
-                tooltipContent += ` (Requires: ${action.id === 'neutralizeAcidity' ? getProblemDisplayName('problemAcidicContaminant') : action.id === 'introduceMicrobes' && !problems.includes('Chemical Contaminant') ? 'Moderate Water Quality' : action.id === 'introduceMicrobes' ? getProblemDisplayName('problemChemicalContaminant') : 'specific conditions'})`;
+                tooltipContent += ` (Requires: ${action.id === 'neutralizeAcidity' ? getProblemDisplayName('problemAcidicContaminant') : action.id === 'introduceMicrobes' && !identifiedProblems.includes('Chemical Contaminant') ? 'Moderate Water Quality' : action.id === 'introduceMicrobes' ? getProblemDisplayName('problemChemicalContaminant') : 'specific conditions'})`;
               }
 
               return (
