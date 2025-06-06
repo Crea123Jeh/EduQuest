@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Dna, FlaskConical, CheckCircle, RotateCcw, Wand2, Sparkles } from 'lucide-react';
 
@@ -40,6 +42,7 @@ const DNA_CATEGORIES: DnaCategory[] = [
       { id: 'b1', nameKey: 'traitBodyRobust', categoryKey: 'bodyType', descriptionKey: 'descBodyRobust' },
       { id: 'b2', nameKey: 'traitBodySlender', categoryKey: 'bodyType', descriptionKey: 'descBodySlender' },
       { id: 'b3', nameKey: 'traitBodyAvian', categoryKey: 'bodyType', descriptionKey: 'descBodyAvian' },
+      { id: 'b4', nameKey: 'traitBodyAquatic', categoryKey: 'bodyType', descriptionKey: 'descBodyAquatic' },
     ],
   },
   {
@@ -49,6 +52,7 @@ const DNA_CATEGORIES: DnaCategory[] = [
       { id: 'l1', nameKey: 'traitLocoLegs', categoryKey: 'locomotion', descriptionKey: 'descLocoLegs' },
       { id: 'l2', nameKey: 'traitLocoWings', categoryKey: 'locomotion', descriptionKey: 'descLocoWings' },
       { id: 'l3', nameKey: 'traitLocoFins', categoryKey: 'locomotion', descriptionKey: 'descLocoFins' },
+      { id: 'l4', nameKey: 'traitLocoTentacles', categoryKey: 'locomotion', descriptionKey: 'descLocoTentacles' },
     ],
   },
   {
@@ -58,6 +62,7 @@ const DNA_CATEGORIES: DnaCategory[] = [
       { id: 's1', nameKey: 'traitSenseEagleEyes', categoryKey: 'sensory', descriptionKey: 'descSenseEagleEyes' },
       { id: 's2', nameKey: 'traitSenseSonar', categoryKey: 'sensory', descriptionKey: 'descSenseSonar' },
       { id: 's3', nameKey: 'traitSenseAntennae', categoryKey: 'sensory', descriptionKey: 'descSenseAntennae' },
+      { id: 's4', nameKey: 'traitSenseThermal', categoryKey: 'sensory', descriptionKey: 'descSenseThermal' },
     ],
   },
   {
@@ -67,6 +72,17 @@ const DNA_CATEGORIES: DnaCategory[] = [
       { id: 'a1', nameKey: 'traitAdaptCamouflage', categoryKey: 'adaptation', descriptionKey: 'descAdaptCamouflage' },
       { id: 'a2', nameKey: 'traitAdaptBiolum', categoryKey: 'adaptation', descriptionKey: 'descAdaptBiolum' },
       { id: 'a3', nameKey: 'traitAdaptArmor', categoryKey: 'adaptation', descriptionKey: 'descAdaptArmor' },
+      { id: 'a4', nameKey: 'traitAdaptVenom', categoryKey: 'adaptation', descriptionKey: 'descAdaptVenom' },
+    ],
+  },
+  {
+    key: 'primaryColor',
+    nameKey: 'dnaCatPrimaryColor',
+    traits: [
+      { id: 'c1', nameKey: 'traitColorRed', categoryKey: 'primaryColor', descriptionKey: 'descColorRed' },
+      { id: 'c2', nameKey: 'traitColorBlue', categoryKey: 'primaryColor', descriptionKey: 'descColorBlue' },
+      { id: 'c3', nameKey: 'traitColorGreen', categoryKey: 'primaryColor', descriptionKey: 'descColorGreen' },
+      { id: 'c4', nameKey: 'traitColorYellow', categoryKey: 'primaryColor', descriptionKey: 'descColorYellow' },
     ],
   },
 ];
@@ -82,54 +98,74 @@ const pageTranslations = {
     zoneName: "Science Lab",
     backToZone: "Back to Science Lab",
     designConsoleTitle: "DNA Splicing Console",
+    creatureNameLabel: "Creature Name:",
+    creatureNamePlaceholder: "Enter your creature's name",
     selectTraitPlaceholder: "Select DNA Trait",
     creatureBlueprintTitle: "Creature Blueprint",
     creatureImageAlt: "Conceptual image of your designed creature",
     nurtureButton: "Nurture Creature",
     nurturingButton: "Nurturing...",
     statusTitle: "Incubation Status",
-    statusInitial: "Select DNA traits above and click 'Nurture Creature' to begin.",
-    statusNoSelection: "Please select a trait for each DNA category.",
+    statusInitial: "Select DNA traits, name your creature, and click 'Nurture Creature' to begin.",
+    statusNoSelection: "Please select a trait for each DNA category and name your creature.",
+    statusNoName: "Please name your creature before nurturing.",
     outcomeTitle: "Nurturing Report:",
-    outcomeDefault: "Your creature has developed! It seems unique.",
-    outcomeRobustAgile: "Your creature is robust and agile, a formidable hunter perhaps!",
-    outcomeSlenderWingedSonar: "A slender, winged creature with keen sonar emerges. It's an agile aerial navigator!",
-    outcomeArmoredAntennae: "This heavily armored creature uses its antennae to sense the world. A resilient survivor!",
-    outcomeBioluminescentFins: "A beautiful creature with bioluminescent fins that gracefully swims. Truly enchanting!",
+    outcomeDefault: (name: string) => `${name} has developed! It seems unique.`,
+    outcomeRobustAgile: (name: string) => `${name} is robust and agile, a formidable hunter perhaps!`,
+    outcomeSlenderWingedSonar: (name: string) => `A slender, winged creature named ${name} with keen sonar emerges. It's an agile aerial navigator!`,
+    outcomeArmoredAntennae: (name: string) => `${name}, this heavily armored creature, uses its antennae to sense the world. A resilient survivor!`,
+    outcomeBioluminescentFins: (name: string) => `A beautiful creature, ${name}, with bioluminescent fins that gracefully swims. Truly enchanting!`,
     completeQuestButton: "Finalize Creature Report",
     restartDesignButton: "Restart Design",
     toastQuestCompletedTitle: "Creature Report Filed!",
-    toastQuestCompletedDescription: (points: number) => `You earned ${points} points for your genetic masterpiece!`,
+    toastQuestCompletedDescription: (points: number, name: string) => `You earned ${points} points for your genetic masterpiece, ${name}!`,
     toastMissingTraitsTitle: "Incomplete DNA",
-    toastMissingTraitsDescription: "Select a trait for all categories before nurturing.",
+    toastMissingTraitsDescription: "Select a trait for all categories and name your creature before nurturing.",
     dnaCatBodyType: "Body Type",
     dnaCatLocomotion: "Locomotion",
     dnaCatSensory: "Sensory Organs",
     dnaCatAdaptation: "Special Adaptation",
+    dnaCatPrimaryColor: "Primary Color",
     traitBodyRobust: "Robust Frame",
     descBodyRobust: "A sturdy and strong physique.",
     traitBodySlender: "Slender Build",
     descBodySlender: "Lightweight and agile.",
     traitBodyAvian: "Avian Structure",
     descBodyAvian: "Hollow bones, built for flight.",
+    traitBodyAquatic: "Aquatic Form",
+    descBodyAquatic: "Streamlined for underwater life.",
     traitLocoLegs: "Powerful Legs",
     descLocoLegs: "For running and jumping.",
     traitLocoWings: "Feathered Wings",
     descLocoWings: "Enables flight or gliding.",
     traitLocoFins: "Aquatic Fins",
     descLocoFins: "Designed for swimming.",
+    traitLocoTentacles: "Grasping Tentacles",
+    descLocoTentacles: "For manipulation and movement.",
     traitSenseEagleEyes: "Eagle Eyesight",
     descSenseEagleEyes: "Exceptional long-distance vision.",
     traitSenseSonar: "Echolocation Sonar",
     descSenseSonar: "Navigates and hunts using sound.",
     traitSenseAntennae: "Sensitive Antennae",
     descSenseAntennae: "Detects subtle environmental changes.",
+    traitSenseThermal: "Thermal Pits",
+    descSenseThermal: "Senses heat signatures.",
     traitAdaptCamouflage: "Chameleon Camouflage",
     descAdaptCamouflage: "Blends seamlessly with surroundings.",
     traitAdaptBiolum: "Bioluminescent Glow",
     descAdaptBiolum: "Emits a natural, captivating light.",
     traitAdaptArmor: "Plated Armor",
     descAdaptArmor: "A tough, protective exoskeleton.",
+    traitAdaptVenom: "Venomous Bite/Sting",
+    descAdaptVenom: "Possesses a potent toxin.",
+    traitColorRed: "Crimson Red",
+    descColorRed: "A vibrant, fiery red hue.",
+    traitColorBlue: "Sapphire Blue",
+    descColorBlue: "A deep and calming blue.",
+    traitColorGreen: "Emerald Green",
+    descColorGreen: "A lush, natural green.",
+    traitColorYellow: "Sunburst Yellow",
+    descColorYellow: "A bright and cheerful yellow.",
     selectedTraitsTitle: "Selected DNA Traits:",
     noTraitsSelected: "No traits selected yet.",
   },
@@ -139,60 +175,81 @@ const pageTranslations = {
     zoneName: "Laboratorium Sains",
     backToZone: "Kembali ke Lab Sains",
     designConsoleTitle: "Konsol Penyambungan DNA",
+    creatureNameLabel: "Nama Makhluk:",
+    creatureNamePlaceholder: "Masukkan nama makhluk Anda",
     selectTraitPlaceholder: "Pilih Sifat DNA",
     creatureBlueprintTitle: "Cetak Biru Makhluk",
     creatureImageAlt: "Gambar konseptual makhluk yang Anda rancang",
     nurtureButton: "Pelihara Makhluk",
     nurturingButton: "Memelihara...",
     statusTitle: "Status Inkubasi",
-    statusInitial: "Pilih sifat DNA di atas dan klik 'Pelihara Makhluk' untuk memulai.",
-    statusNoSelection: "Silakan pilih sifat untuk setiap kategori DNA.",
+    statusInitial: "Pilih sifat DNA, beri nama makhluk Anda, dan klik 'Pelihara Makhluk' untuk memulai.",
+    statusNoSelection: "Silakan pilih sifat untuk setiap kategori DNA dan beri nama makhluk Anda.",
+    statusNoName: "Silakan beri nama makhluk Anda sebelum memelihara.",
     outcomeTitle: "Laporan Pemeliharaan:",
-    outcomeDefault: "Makhluk Anda telah berkembang! Tampaknya unik.",
-    outcomeRobustAgile: "Makhluk Anda kuat dan lincah, mungkin pemburu yang tangguh!",
-    outcomeSlenderWingedSonar: "Makhluk ramping bersayap dengan sonar tajam muncul. Navigator udara yang gesit!",
-    outcomeArmoredAntennae: "Makhluk berlapis baja ini menggunakan antenanya untuk merasakan dunia. Penyintas yang tangguh!",
-    outcomeBioluminescentFins: "Makhluk cantik dengan sirip berpendar hayati yang berenang dengan anggun. Sungguh memesona!",
+    outcomeDefault: (name: string) => `${name} telah berkembang! Tampaknya unik.`,
+    outcomeRobustAgile: (name: string) => `${name} kuat dan lincah, mungkin pemburu yang tangguh!`,
+    outcomeSlenderWingedSonar: (name: string) => `Makhluk ramping bersayap bernama ${name} dengan sonar tajam muncul. Navigator udara yang gesit!`,
+    outcomeArmoredAntennae: (name: string) => `${name}, makhluk berlapis baja ini, menggunakan antenanya untuk merasakan dunia. Penyintas yang tangguh!`,
+    outcomeBioluminescentFins: (name: string) => `Makhluk cantik, ${name}, dengan sirip berpendar hayati yang berenang dengan anggun. Sungguh memesona!`,
     completeQuestButton: "Finalisasi Laporan Makhluk",
     restartDesignButton: "Ulangi Desain",
     toastQuestCompletedTitle: "Laporan Makhluk Diajukan!",
-    toastQuestCompletedDescription: (points: number) => `Anda mendapatkan ${points} poin untuk mahakarya genetik Anda!`,
+    toastQuestCompletedDescription: (points: number, name: string) => `Anda mendapatkan ${points} poin untuk mahakarya genetik Anda, ${name}!`,
     toastMissingTraitsTitle: "DNA Tidak Lengkap",
-    toastMissingTraitsDescription: "Pilih sifat untuk semua kategori sebelum memelihara.",
+    toastMissingTraitsDescription: "Pilih sifat untuk semua kategori dan beri nama makhluk Anda sebelum memelihara.",
     dnaCatBodyType: "Tipe Tubuh",
     dnaCatLocomotion: "Penggerak",
     dnaCatSensory: "Organ Sensorik",
     dnaCatAdaptation: "Adaptasi Khusus",
+    dnaCatPrimaryColor: "Warna Utama",
     traitBodyRobust: "Kerangka Kuat",
     descBodyRobust: "Fisik yang kokoh dan kuat.",
     traitBodySlender: "Bentuk Ramping",
     descBodySlender: "Ringan dan lincah.",
     traitBodyAvian: "Struktur Unggas",
     descBodyAvian: "Tulang berongga, dirancang untuk terbang.",
+    traitBodyAquatic: "Bentuk Akuatik",
+    descBodyAquatic: "Dirancang untuk kehidupan bawah air.",
     traitLocoLegs: "Kaki Kuat",
     descLocoLegs: "Untuk berlari dan melompat.",
     traitLocoWings: "Sayap Berbulu",
     descLocoWings: "Memungkinkan terbang atau meluncur.",
     traitLocoFins: "Sirip Akuatik",
     descLocoFins: "Dirancang untuk berenang.",
+    traitLocoTentacles: "Tentakel Pencengkeram",
+    descLocoTentacles: "Untuk manipulasi dan gerakan.",
     traitSenseEagleEyes: "Penglihatan Elang",
     descSenseEagleEyes: "Penglihatan jarak jauh yang luar biasa.",
     traitSenseSonar: "Sonar Ekolokasi",
     descSenseSonar: "Menavigasi dan berburu menggunakan suara.",
     traitSenseAntennae: "Antena Sensitif",
     descSenseAntennae: "Mendeteksi perubahan lingkungan yang halus.",
+    traitSenseThermal: "Lubang Termal",
+    descSenseThermal: "Merasakan tanda panas.",
     traitAdaptCamouflage: "Kamuflase Bunglon",
     descAdaptCamouflage: "Menyatu sempurna dengan lingkungan sekitar.",
     traitAdaptBiolum: "Pendar Bioluminesen",
     descAdaptBiolum: "Memancarkan cahaya alami yang menawan.",
     traitAdaptArmor: "Pelindung Lapis Baja",
     descAdaptArmor: "Eksoskeleton pelindung yang kuat.",
+    traitAdaptVenom: "Gigitan/Sengatan Berbisa",
+    descAdaptVenom: "Memiliki racun yang kuat.",
+    traitColorRed: "Merah Delima",
+    descColorRed: "Warna merah menyala yang cerah.",
+    traitColorBlue: "Biru Safir",
+    descColorBlue: "Biru tua yang menenangkan.",
+    traitColorGreen: "Hijau Zamrud",
+    descColorGreen: "Hijau alami yang subur.",
+    traitColorYellow: "Kuning Mentari",
+    descColorYellow: "Kuning cerah dan ceria.",
     selectedTraitsTitle: "Sifat DNA Terpilih:",
     noTraitsSelected: "Belum ada sifat yang dipilih.",
   }
 };
 
 export default function CreatureFeatureQuestPage() {
+  const [creatureName, setCreatureName] = useState<string>('');
   const [selectedTraits, setSelectedTraits] = useState<SelectedDnaTraits>({});
   const [isNurturing, setIsNurturing] = useState(false);
   const [nurturingStatus, setNurturingStatus] = useState<string>('');
@@ -237,7 +294,7 @@ export default function CreatureFeatureQuestPage() {
 
   const handleTraitSelect = (categoryKey: string, traitId: string) => {
     setSelectedTraits(prev => ({ ...prev, [categoryKey]: traitId }));
-    setQuestAttempted(false); // Allow re-nurturing if traits change
+    setQuestAttempted(false); 
     setNurturingOutcome(null);
     setNurturingStatus(t.statusInitial);
   };
@@ -255,17 +312,28 @@ export default function CreatureFeatureQuestPage() {
   };
   
   const creatureImageText = useMemo(() => {
-    if (!allCategoriesSelected) return "INCOMPLETE_DNA";
-    if (isNurturing) return "NURTURING";
-    if (nurturingOutcome) return t[nurturingOutcome.messageKey as keyof typeof t].substring(0,20).toUpperCase().replace(/\s/g, '_');
+    if (!creatureName.trim() && !allCategoriesSelected) return "DESIGN_YOUR_BEAST";
+    if (!creatureName.trim()) return "NAME_YOUR_BEAST";
+    if (!allCategoriesSelected) return `${creatureName.toUpperCase()}_INCOMPLETE_DNA`;
+    if (isNurturing) return `${creatureName.toUpperCase()}_NURTURING`;
+    if (nurturingOutcome) return `${creatureName.toUpperCase()}_${t[nurturingOutcome.messageKey as keyof typeof t](creatureName).substring(0,15).toUpperCase().replace(/\s/g, '_')}`;
     
     const body = getSelectedTraitName('bodyType')?.substring(0,5) || "BODY";
-    const loco = getSelectedTraitName('locomotion')?.substring(0,5) || "LOCO";
-    return `${body}_${loco}_CREATURE`;
-  }, [allCategoriesSelected, isNurturing, nurturingOutcome, selectedTraits, t]);
+    const color = getSelectedTraitName('primaryColor')?.substring(0,5) || "COLOR";
+    return `${creatureName.toUpperCase()}_${color}_${body}`;
+  }, [allCategoriesSelected, isNurturing, nurturingOutcome, selectedTraits, t, creatureName]);
 
 
   const handleNurture = () => {
+    if (!creatureName.trim()) {
+      setNurturingStatus(t.statusNoName);
+      toast({
+        title: t.toastMissingTraitsTitle,
+        description: t.statusNoName,
+        variant: 'destructive',
+      });
+      return;
+    }
     if (!allCategoriesSelected) {
       setNurturingStatus(t.statusNoSelection);
       toast({
@@ -280,17 +348,15 @@ export default function CreatureFeatureQuestPage() {
     setNurturingOutcome(null);
     setNurturingStatus(t.nurturingButton);
 
-    // Simulate nurturing process and outcome determination
     setTimeout(() => {
       let outcomeKey = 'outcomeDefault';
-      // Simple logic for varied outcomes based on selections
       if (selectedTraits['bodyType'] === 'b1' && selectedTraits['locomotion'] === 'l1') {
         outcomeKey = 'outcomeRobustAgile';
       } else if (selectedTraits['bodyType'] === 'b2' && selectedTraits['locomotion'] === 'l2' && selectedTraits['sensory'] === 's2') {
         outcomeKey = 'outcomeSlenderWingedSonar';
       } else if (selectedTraits['adaptation'] === 'a3' && selectedTraits['sensory'] === 's3') {
         outcomeKey = 'outcomeArmoredAntennae';
-      } else if (selectedTraits['adaptation'] === 'a2' && selectedTraits['locomotion'] === 'l3') {
+      } else if (selectedTraits['adaptation'] === 'a2' && selectedTraits['locomotion'] === 'l3' && selectedTraits['primaryColor'] === 'c2') {
         outcomeKey = 'outcomeBioluminescentFins';
       }
       
@@ -300,16 +366,18 @@ export default function CreatureFeatureQuestPage() {
         return trait ? (t[trait.nameKey as keyof typeof t] || trait.nameKey) : 'Unknown';
       }).join(', ');
       
-      const outcomeDetails = `Traits: ${selectedTraitNames}.`;
+      const outcomeDetails = `${t.selectedTraitsTitle} ${selectedTraitNames}.`;
+      const finalCreatureName = creatureName.trim() || "Creature";
       
       setNurturingOutcome({ messageKey: outcomeKey, details: outcomeDetails });
-      setNurturingStatus(t[outcomeKey as keyof typeof t] || "Nurturing complete.");
+      setNurturingStatus(t[outcomeKey as keyof typeof t](finalCreatureName) || "Nurturing complete.");
       setIsNurturing(false);
       setQuestAttempted(true);
     }, 2000);
   };
 
   const handleRestartDesign = () => {
+    setCreatureName('');
     setSelectedTraits({});
     setNurturingStatus(t.statusInitial);
     setNurturingOutcome(null);
@@ -318,9 +386,10 @@ export default function CreatureFeatureQuestPage() {
   };
 
   const handleCompleteQuest = () => {
+    const finalCreatureName = creatureName.trim() || "your creature";
     toast({
       title: t.toastQuestCompletedTitle,
-      description: t.toastQuestCompletedDescription(questDetails.points),
+      description: t.toastQuestCompletedDescription(questDetails.points, finalCreatureName),
     });
   };
 
@@ -354,6 +423,16 @@ export default function CreatureFeatureQuestPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="creatureName" className="text-base font-semibold block mb-1">{t.creatureNameLabel}</Label>
+              <Input 
+                id="creatureName"
+                value={creatureName}
+                onChange={(e) => setCreatureName(e.target.value)}
+                placeholder={t.creatureNamePlaceholder}
+                disabled={isNurturing}
+              />
+            </div>
             {DNA_CATEGORIES.map(category => (
               <div key={category.key}>
                 <label htmlFor={category.key} className="text-base font-semibold block mb-1">
@@ -386,7 +465,7 @@ export default function CreatureFeatureQuestPage() {
           <CardFooter>
             <Button 
               onClick={handleNurture} 
-              disabled={isNurturing || !allCategoriesSelected || questAttempted} 
+              disabled={isNurturing || !allCategoriesSelected || questAttempted || !creatureName.trim()} 
               className="w-full"
             >
               <Sparkles className="mr-2 h-4 w-4" />
@@ -405,7 +484,7 @@ export default function CreatureFeatureQuestPage() {
             </CardHeader>
             <CardContent className="text-center">
               <Image
-                src={`https://placehold.co/600x350.png?text=${creatureImageText}`}
+                src={`https://placehold.co/600x350.png?text=${encodeURIComponent(creatureImageText)}`}
                 alt={t.creatureImageAlt}
                 width={600}
                 height={350}
@@ -414,8 +493,8 @@ export default function CreatureFeatureQuestPage() {
                 key={creatureImageText} 
               />
                <div className="mt-4 text-left">
-                <h4 className="font-semibold mb-2">{t.selectedTraitsTitle}</h4>
-                {allCategoriesSelected ? (
+                <h4 className="font-semibold mb-2">{creatureName ? `${creatureName}'s ${t.selectedTraitsTitle}` : t.selectedTraitsTitle}</h4>
+                {Object.keys(selectedTraits).length > 0 ? (
                   <ul className="space-y-1 text-sm text-muted-foreground list-disc list-inside">
                     {DNA_CATEGORIES.map(cat => {
                       const traitName = getSelectedTraitName(cat.key);
@@ -458,6 +537,3 @@ export default function CreatureFeatureQuestPage() {
     </div>
   );
 }
-
-        
-    
