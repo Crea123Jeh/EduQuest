@@ -1,9 +1,42 @@
+
+'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Palette, Brush, UploadCloud } from 'lucide-react';
+import { Palette, Brush, UploadCloud, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRef, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input'; // Added for file input
 
 export default function DesignStudioPage() {
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFileName(file.name);
+      // Simulate upload
+      toast({
+        title: 'File Selected',
+        description: `${file.name} would be uploaded. (This is a prototype feature)`,
+      });
+      // Reset file input for next selection
+      if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } else {
+      setSelectedFileName(null);
+    }
+  };
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
       <Card className="shadow-xl">
@@ -27,14 +60,28 @@ export default function DesignStudioPage() {
               <p className="text-muted-foreground mb-6">
                 Our studio supports various tools and integrations, allowing you to seamlessly blend art with your academic quests. For example, in the &quot;Mission Penyelamatan Bumi&quot; project, you might design a campaign poster here after calculating carbon emissions in the Math zone and analyzing economic impacts in the IPS zone.
               </p>
-              <div className="flex gap-4">
-                <Button>
-                  <Brush className="mr-2 h-4 w-4" /> Start New Design
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild>
+                  <Link href="/design-studio/new">
+                    <Brush className="mr-2 h-4 w-4" /> Start New Design
+                  </Link>
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleUploadClick}>
                   <UploadCloud className="mr-2 h-4 w-4" /> Upload Existing Work
                 </Button>
+                <Input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                  accept="image/*, .pdf, .doc, .docx, .ppt, .pptx, .txt" // Example file types
+                />
               </div>
+              {selectedFileName && (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Selected file for "upload": {selectedFileName}
+                </p>
+              )}
             </div>
             <div>
               <Image 
