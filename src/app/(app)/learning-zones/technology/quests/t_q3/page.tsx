@@ -25,28 +25,31 @@ const questDetails = {
 
 interface DataFragment {
   id: string;
-  contentKey: string; // For display name/snippet
+  contentKey: string; 
   type: 'header' | 'data' | 'footer' | 'corrupted' | 'irrelevant';
-  fileOrigin?: 'report' | 'image' | 'system'; // Helps in creating decoys
+  fileOrigin?: 'report' | 'image' | 'system'; 
 }
 
 const TARGET_FILE_ID = 'Critical_Report.docx';
 const CORRECT_FRAGMENT_SEQUENCE: string[] = ['REPORT_H_01', 'REPORT_D_A', 'REPORT_D_B', 'REPORT_F_01'];
 const INITIAL_INTEGRITY = 100;
 const MIN_INTEGRITY_FOR_WIN = 50;
-const INCORRECT_FRAGMENT_PENALTY = 20;
-const WRONG_ORDER_PENALTY_PER_FRAGMENT = 5; // Applied if all fragments are correct but order is wrong
+
+const INCORRECT_FRAGMENT_PENALTY = 25; 
+const MISSING_OR_EXTRA_PENALTY = 30; 
+const WRONG_ORDER_PENALTY = 20;
 
 const ALL_FRAGMENTS: DataFragment[] = [
   { id: 'REPORT_H_01', contentKey: 'fragReportHeader', type: 'header', fileOrigin: 'report' },
-  { id: 'IMG_CHUNK_X', contentKey: 'fragImgChunkX', type: 'data', fileOrigin: 'image' },
+  { id: 'IMG_CHUNK_X', contentKey: 'fragImgChunkX', type: 'data', fileOrigin: 'image' }, // Decoy
   { id: 'REPORT_D_A', contentKey: 'fragReportDataA', type: 'data', fileOrigin: 'report' },
-  { id: 'CORRUPT_S1', contentKey: 'fragCorruptGeneric', type: 'corrupted' },
+  { id: 'CORRUPT_S1', contentKey: 'fragCorruptGeneric', type: 'corrupted' }, // Corrupted
   { id: 'REPORT_D_B', contentKey: 'fragReportDataB', type: 'data', fileOrigin: 'report' },
-  { id: 'SYSTEM_LOG_OLD', contentKey: 'fragSysLog', type: 'irrelevant', fileOrigin: 'system' },
+  { id: 'SYSTEM_LOG_OLD', contentKey: 'fragSysLog', type: 'irrelevant', fileOrigin: 'system' }, // Irrelevant
   { id: 'REPORT_F_01', contentKey: 'fragReportFooter', type: 'footer', fileOrigin: 'report' },
-  { id: 'IMG_HEADER_Y', contentKey: 'fragImgHeaderY', type: 'header', fileOrigin: 'image' },
+  { id: 'IMG_HEADER_Y', contentKey: 'fragImgHeaderY', type: 'header', fileOrigin: 'image' }, // Decoy
   { id: 'REPORT_D_C_EXTRA', contentKey: 'fragReportDataCExtra', type: 'data', fileOrigin: 'report' }, // Decoy for this report
+  { id: 'CONFIG_FILE_BAK', contentKey: 'fragConfigFileBak', type: 'irrelevant', fileOrigin: 'system' }, // Another irrelevant
 ];
 
 const pageTranslations = {
@@ -65,15 +68,14 @@ const pageTranslations = {
     feedbackSuccess: (fileName: string) => `Success! ${fileName} has been recovered with sufficient integrity.`,
     feedbackFailureIntegrity: (fileName:string) => `Recovery Failed! Integrity too low. ${fileName} could not be salvaged. Critical data loss.`,
     feedbackFailureOrder: (fileName: string) => `Sequence Error! While all fragments might be correct, the order is wrong. ${fileName} is garbled. Integrity penalized.`,
-    feedbackFailureIncorrectFragments: (fileName: string, wrongCount: number) => `Incorrect Fragments! ${wrongCount} selected fragment(s) do not belong to ${fileName} or are corrupted. Integrity severely penalized.`,
-    feedbackMissingFragments: (fileName: string) => `Missing Fragments! Key parts of ${fileName} were not included. Integrity penalized.`,
+    feedbackFailureIncorrectFragments: (fileName: string, wrongCount: number) => `Incorrect Fragments! ${wrongCount} selected fragment(s) do not belong to ${fileName} or are corrupted/irrelevant. Integrity severely penalized.`,
+    feedbackMissingFragments: (fileName: string) => `Missing or Extra Fragments! The assembled file for ${fileName} is incomplete or contains unnecessary correct parts. Integrity penalized.`,
     outcomeWin: "File Recovered Successfully! Your digital forensic skills are top-notch!",
     outcomeLoss: "Data Loss Imminent! The file could not be recovered. The corrupted drive is unsalvageable with this attempt.",
     restartButton: "Restart Recovery Process",
     claimRewardButton: "Finalize Recovery Report",
     toastRewardTitle: "Recovery Report Filed!",
     toastRewardDescription: (points: number, outcome: string) => `You earned ${points} points. Recovery Status: ${outcome}`,
-    // Fragment content keys
     fragReportHeader: "REPORT_HEADER_01: Critical Analysis Document",
     fragImgChunkX: "IMAGE_DATA_CHUNK_X: Pixel Map Segment",
     fragReportDataA: "REPORT_DATA_A: Section 1 - Findings",
@@ -83,6 +85,7 @@ const pageTranslations = {
     fragReportFooter: "REPORT_FOOTER_01: End of Document",
     fragImgHeaderY: "IMAGE_HEADER_Y: Vacation_Photo.jpg Meta",
     fragReportDataCExtra: "REPORT_DATA_C_OBSOLETE: Appendix - Draft Notes",
+    fragConfigFileBak: "CONFIG_SYS.BAK: Old System Backup",
     fragmentTypeHeader: "Header",
     fragmentTypeData: "Data",
     fragmentTypeFooter: "Footer",
@@ -104,8 +107,8 @@ const pageTranslations = {
     feedbackSuccess: (fileName: string) => `Sukses! ${fileName} telah dipulihkan dengan integritas yang cukup.`,
     feedbackFailureIntegrity: (fileName:string) => `Pemulihan Gagal! Integritas terlalu rendah. ${fileName} tidak dapat diselamatkan. Kehilangan data kritis.`,
     feedbackFailureOrder: (fileName: string) => `Kesalahan Urutan! Meskipun semua fragmen mungkin benar, urutannya salah. ${fileName} menjadi kacau. Integritas dikurangi.`,
-    feedbackFailureIncorrectFragments: (fileName: string, wrongCount: number) => `Fragmen Salah! ${wrongCount} fragmen yang dipilih tidak termasuk dalam ${fileName} atau rusak. Integritas sangat dikurangi.`,
-    feedbackMissingFragments: (fileName: string) => `Fragmen Hilang! Bagian penting dari ${fileName} tidak disertakan. Integritas dikurangi.`,
+    feedbackFailureIncorrectFragments: (fileName: string, wrongCount: number) => `Fragmen Salah! ${wrongCount} fragmen yang dipilih tidak termasuk dalam ${fileName} atau rusak/tidak relevan. Integritas sangat dikurangi.`,
+    feedbackMissingFragments: (fileName: string) => `Fragmen Hilang atau Berlebih! File yang disusun untuk ${fileName} tidak lengkap atau berisi bagian benar yang tidak perlu. Integritas dikurangi.`,
     outcomeWin: "File Berhasil Dipulihkan! Keterampilan forensik digital Anda luar biasa!",
     outcomeLoss: "Kehilangan Data Segera Terjadi! File tidak dapat dipulihkan. Drive yang rusak tidak dapat diselamatkan dengan upaya ini.",
     restartButton: "Ulangi Proses Pemulihan",
@@ -121,6 +124,7 @@ const pageTranslations = {
     fragReportFooter: "REPORT_FOOTER_01: Akhir Dokumen",
     fragImgHeaderY: "IMAGE_HEADER_Y: Meta Vacation_Photo.jpg",
     fragReportDataCExtra: "REPORT_DATA_C_OBSOLETE: Lampiran - Catatan Draf",
+    fragConfigFileBak: "CONFIG_SYS.BAK: Cadangan Sistem Lama",
     fragmentTypeHeader: "Header",
     fragmentTypeData: "Data",
     fragmentTypeFooter: "Kaki",
@@ -149,27 +153,30 @@ export default function DataRecoveryQuestPage() {
 
   useEffect(() => {
     const updateLang = () => {
-      const savedSettings = localStorage.getItem('user-app-settings');
       let newLangKey: 'en' | 'id' = 'en';
-      if (savedSettings) {
-        try {
-          const parsed = JSON.parse(savedSettings);
-          if (parsed.language && (parsed.language === 'en' || parsed.language === 'id')) {
-            newLangKey = parsed.language;
-          }
-        } catch (e) { console.error("Error reading lang for DataRecoveryPage", e); }
+      if (typeof window !== 'undefined') {
+        const savedSettings = localStorage.getItem('user-app-settings');
+        if (savedSettings) {
+          try {
+            const parsed = JSON.parse(savedSettings);
+            if (parsed.language && (parsed.language === 'en' || parsed.language === 'id')) {
+              newLangKey = parsed.language;
+            }
+          } catch (e) { console.error("Error reading lang for DataRecoveryPage", e); }
+        }
       }
       setLang(newLangKey);
     };
     updateLang();
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'user-app-settings') updateLang();
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    if (typeof window !== 'undefined') {
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'user-app-settings') updateLang();
+      };
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
   }, []);
 
-  // Shuffle fragments once on mount and language change (for display names)
   useEffect(() => {
     setAvailableFragments([...ALL_FRAGMENTS].sort(() => Math.random() - 0.5));
     setFeedbackMessage('');
@@ -185,53 +192,71 @@ export default function DataRecoveryQuestPage() {
   const handleRemoveFragment = (fragment: DataFragment) => {
     if (gameState !== 'playing') return;
     setAssembledSequence(prev => prev.filter(f => f.id !== fragment.id));
-    setAvailableFragments(prev => [...prev, fragment].sort(() => Math.random() - 0.5)); // Add back and re-shuffle for UX
+    setAvailableFragments(prev => [...prev, fragment].sort(() => Math.random() - 0.5));
   };
 
   const handleAttemptRecovery = () => {
-    if (gameState !== 'playing' || assembledSequence.length === 0) return;
+    if (gameState !== 'playing' || assembledSequence.length === 0) {
+        setFeedbackMessage(t.emptyAssembly);
+        return;
+    }
     setIsAttempting(true);
 
     setTimeout(() => {
       let currentIntegrity = recoveryIntegrity;
+      let newFeedback = '';
+      let isSuccess = false;
+
       const assembledIds = assembledSequence.map(f => f.id);
       
-      // Check for incorrect/corrupted fragments
       const wrongFragments = assembledSequence.filter(
-        f => f.type === 'corrupted' || !CORRECT_FRAGMENT_SEQUENCE.includes(f.id)
+        f => !CORRECT_FRAGMENT_SEQUENCE.includes(f.id) || f.type === 'corrupted' || f.type === 'irrelevant'
       );
+
       if (wrongFragments.length > 0) {
         currentIntegrity -= wrongFragments.length * INCORRECT_FRAGMENT_PENALTY;
-        setFeedbackMessage(t.feedbackFailureIncorrectFragments(TARGET_FILE_ID, wrongFragments.length));
+        newFeedback = t.feedbackFailureIncorrectFragments(TARGET_FILE_ID, wrongFragments.length);
       } else {
-        // All selected fragments are part of the correct file, now check sequence and completeness
-        const isComplete = CORRECT_FRAGMENT_SEQUENCE.every(id => assembledIds.includes(id)) && assembledIds.length === CORRECT_FRAGMENT_SEQUENCE.length;
-        if (!isComplete) {
-             currentIntegrity -= INCORRECT_FRAGMENT_PENALTY; // Penalty for missing/extra correct-type frags
-             setFeedbackMessage(t.feedbackMissingFragments(TARGET_FILE_ID));
+        // No wrong fragments, check for completeness and order
+        const isCompleteSet = CORRECT_FRAGMENT_SEQUENCE.every(id => assembledIds.includes(id)) && 
+                              assembledIds.length === CORRECT_FRAGMENT_SEQUENCE.length;
+
+        if (!isCompleteSet) {
+          currentIntegrity -= MISSING_OR_EXTRA_PENALTY;
+          newFeedback = t.feedbackMissingFragments(TARGET_FILE_ID);
         } else {
-            // Check order
-            const isOrderCorrect = assembledIds.every((id, index) => id === CORRECT_FRAGMENT_SEQUENCE[index]);
-            if (!isOrderCorrect) {
-                currentIntegrity -= WRONG_ORDER_PENALTY_PER_FRAGMENT * CORRECT_FRAGMENT_SEQUENCE.length;
-                setFeedbackMessage(t.feedbackFailureOrder(TARGET_FILE_ID));
-            } else {
-                // Success!
-                setGameState('won');
-                setFeedbackMessage(t.feedbackSuccess(TARGET_FILE_ID));
-                setRecoveryIntegrity(Math.max(0, currentIntegrity));
-                setIsAttempting(false);
-                return;
-            }
+          // Correct set of fragments, now check order
+          const isOrderCorrect = assembledIds.every((id, index) => id === CORRECT_FRAGMENT_SEQUENCE[index]);
+          if (!isOrderCorrect) {
+            currentIntegrity -= WRONG_ORDER_PENALTY;
+            newFeedback = t.feedbackFailureOrder(TARGET_FILE_ID);
+          } else {
+            newFeedback = t.feedbackSuccess(TARGET_FILE_ID);
+            isSuccess = true;
+          }
         }
       }
       
       currentIntegrity = Math.max(0, currentIntegrity);
       setRecoveryIntegrity(currentIntegrity);
+      setFeedbackMessage(newFeedback);
 
-      if (currentIntegrity < MIN_INTEGRITY_FOR_WIN) {
-        setGameState('lost');
-         setFeedbackMessage(prev => `${prev} ${t.feedbackFailureIntegrity(TARGET_FILE_ID)}`);
+      if (isSuccess) {
+        if (currentIntegrity >= MIN_INTEGRITY_FOR_WIN) {
+            setGameState('won');
+        } else {
+            // This case should ideally not happen if success means perfect, but as a safeguard
+            setGameState('lost');
+            setFeedbackMessage(t.feedbackFailureIntegrity(TARGET_FILE_ID));
+        }
+      } else {
+        if (currentIntegrity < MIN_INTEGRITY_FOR_WIN) {
+          setGameState('lost');
+          // Append the integrity failure message if not already the primary feedback
+          if (!newFeedback.includes(t.feedbackFailureIntegrity(TARGET_FILE_ID).substring(0,20))) { // check substring to avoid double messages
+             setFeedbackMessage(prev => `${prev} ${t.feedbackFailureIntegrity(TARGET_FILE_ID)}`);
+          }
+        }
       }
       setIsAttempting(false);
     }, 1500);
@@ -335,7 +360,7 @@ export default function DataRecoveryQuestPage() {
                 ) : (
                   <ol className="space-y-2">
                     {assembledSequence.map((fragment, index) => (
-                      <li key={fragment.id + index} className="flex items-center justify-between p-2 bg-card rounded-md border shadow-sm">
+                      <li key={fragment.id + "_" + index} className="flex items-center justify-between p-2 bg-card rounded-md border shadow-sm">
                         <div className="flex items-center">
                            <span className="mr-2 text-sm font-medium text-primary">{index + 1}.</span>
                            <div>
@@ -359,16 +384,19 @@ export default function DataRecoveryQuestPage() {
               </ScrollArea>
             </div>
             
-            {feedbackMessage && !feedbackMessage.includes(t.outcomeWin) && !feedbackMessage.includes(t.outcomeLoss) && (
+            {feedbackMessage && (
               <div className={`p-3 rounded-md text-sm font-medium text-center flex items-center justify-center gap-2
-                ${gameState === 'won' || feedbackMessage.startsWith(t.feedbackSuccess('').substring(0,5)) ? 'bg-green-500/10 text-green-700' : 
-                gameState === 'lost' || feedbackMessage.startsWith(t.feedbackFailureIntegrity('').substring(0,5)) || feedbackMessage.startsWith(t.feedbackFailureIncorrectFragments('',0).substring(0,5)) || feedbackMessage.startsWith(t.feedbackMissingFragments('').substring(0,5)) ? 'bg-destructive/10 text-destructive' : 
-                feedbackMessage.startsWith(t.feedbackFailureOrder('').substring(0,5)) ? 'bg-yellow-500/10 text-yellow-700' :
-                'bg-secondary/30'
+                ${gameState === 'won' ? 'bg-green-500/10 text-green-700' : 
+                gameState === 'lost' ? 'bg-destructive/10 text-destructive' : 
+                feedbackMessage === t.feedbackFailureOrder(TARGET_FILE_ID) ? 'bg-yellow-500/10 text-yellow-700' :
+                feedbackMessage === t.emptyAssembly ? 'bg-yellow-500/10 text-yellow-700' :
+                (feedbackMessage.includes(t.feedbackFailureIncorrectFragments(TARGET_FILE_ID,0).substring(0,10)) || feedbackMessage.includes(t.feedbackMissingFragments(TARGET_FILE_ID).substring(0,10))) ? 'bg-destructive/10 text-destructive' :
+                'bg-secondary/30' 
               }`}>
-                {gameState === 'won' || feedbackMessage.startsWith(t.feedbackSuccess('').substring(0,5)) ? <CheckCircle className="h-4 w-4"/> : 
-                 gameState === 'lost' || feedbackMessage.startsWith(t.feedbackFailureIntegrity('').substring(0,5)) || feedbackMessage.startsWith(t.feedbackFailureIncorrectFragments('',0).substring(0,5)) || feedbackMessage.startsWith(t.feedbackMissingFragments('').substring(0,5)) ? <ServerCrash className="h-4 w-4"/> :
-                 feedbackMessage.startsWith(t.feedbackFailureOrder('').substring(0,5)) ? <AlertTriangle className="h-4 w-4"/> : <Info className="h-4 w-4"/>
+                {gameState === 'won' ? <CheckCircle className="h-4 w-4"/> : 
+                 gameState === 'lost' ? <ServerCrash className="h-4 w-4"/> : 
+                 feedbackMessage === t.feedbackFailureOrder(TARGET_FILE_ID) ? <AlertTriangle className="h-4 w-4"/> : 
+                 <Info className="h-4 w-4"/>
                 }
                 {feedbackMessage}
               </div>
@@ -397,9 +425,9 @@ export default function DataRecoveryQuestPage() {
               {gameState === 'won' ? t.outcomeWin : t.outcomeLoss}
             </CardTitle>
             <CardDescription>Final Integrity: {recoveryIntegrity}%</CardDescription>
-             {feedbackMessage && (feedbackMessage.includes(t.outcomeWin) || feedbackMessage.includes(t.outcomeLoss)) && (
+             {feedbackMessage && (gameState === 'won' || gameState === 'lost') && (
                <p className={`text-sm mt-2 ${gameState === 'won' ? 'text-green-600' : 'text-destructive'}`}>
-                 {feedbackMessage.substring(feedbackMessage.lastIndexOf(t.outcomeWin) !== -1 ? feedbackMessage.lastIndexOf(t.outcomeWin) : feedbackMessage.lastIndexOf(t.outcomeLoss))}
+                 {feedbackMessage} 
                </p>
              )}
           </CardHeader>
