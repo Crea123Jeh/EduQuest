@@ -10,6 +10,29 @@ export interface LearningZone {
   quests?: Quest[];
 }
 
+export interface ClassroomStudent {
+  id: string;
+  name: string;
+  avatarUrl?: string; // Optional avatar for students
+}
+
+export interface ClassroomAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  date: string; // e.g., "YYYY-MM-DD" or "Month Day, Year"
+}
+
+export interface ClassroomAssignment {
+  id: string;
+  title: string;
+  dueDate: string;
+  status: 'Pending' | 'Submitted' | 'Graded' | 'Upcoming';
+  type: 'Quest' | 'Assignment' | 'Discussion';
+  description?: string;
+  relatedQuestId?: string; // Optional: if it's directly linked to a learning zone quest
+}
+
 export interface Classroom {
   id: string;
   name: string;
@@ -18,6 +41,12 @@ export interface Classroom {
   studentCount: number;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   active: boolean;
+  description?: string;
+  bannerImage?: string; // URL for a banner image
+  aiBannerHint?: string; // AI hint for banner image
+  students?: ClassroomStudent[];
+  announcements?: ClassroomAnnouncement[];
+  assignments?: ClassroomAssignment[];
 }
 
 export interface Quest {

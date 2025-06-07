@@ -11,21 +11,44 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
+// Mock data for classroom listing page. The detailed data is mocked in [classroomId]/page.tsx
 const initialMyClassrooms: Classroom[] = [
-  { id: 'c1', name: 'Grade 5 Adventure (EduQuest)', teacher: 'Ms. Lovelace', subject: 'Interdisciplinary', studentCount: 25, difficulty: 'Medium', active: true },
-  { id: 'c3', name: 'Creative Coders Club (EduQuest)', teacher: 'Mr. Turing', subject: 'Computer Science', studentCount: 15, difficulty: 'Medium', active: true },
+  { 
+    id: 'c1', 
+    name: 'Grade 5 Adventure (EduQuest)', 
+    teacher: 'Ms. Lovelace', 
+    subject: 'Interdisciplinary', 
+    studentCount: 25, 
+    difficulty: 'Medium', 
+    active: true,
+    description: 'An exciting journey through various subjects.', // Basic description for listing
+    bannerImage: 'https://placehold.co/1200x300.png',
+    aiBannerHint: 'fantasy classroom adventure',
+  },
+  { 
+    id: 'c3', 
+    name: 'Creative Coders Club (EduQuest)', 
+    teacher: 'Mr. Turing', 
+    subject: 'Computer Science', 
+    studentCount: 15, 
+    difficulty: 'Medium', 
+    active: true,
+    description: 'Learn to code and build amazing projects!',
+    bannerImage: 'https://placehold.co/1200x300.png',
+    aiBannerHint: 'coding computer science club',
+  },
 ];
 
 const availableClassrooms: Classroom[] = [
-  { id: 'c2', name: 'History Buffs Unite', teacher: 'Mr. Herodotus', subject: 'History', studentCount: 18, difficulty: 'Hard', active: false },
-  { id: 'c4', name: 'Physics Explorers', teacher: 'Dr. Curie', subject: 'Science', studentCount: 22, difficulty: 'Medium', active: true },
-  { id: 'c5', name: 'Mathletes Challenge', teacher: 'Prof. Euler', subject: 'Mathematics', studentCount: 30, difficulty: 'Hard', active: true },
+  { id: 'c2', name: 'History Buffs Unite', teacher: 'Mr. Herodotus', subject: 'History', studentCount: 18, difficulty: 'Hard', active: false, description: 'Explore historical events.' },
+  { id: 'c4', name: 'Physics Explorers', teacher: 'Dr. Curie', subject: 'Science', studentCount: 22, difficulty: 'Medium', active: true, description: 'Discover the wonders of physics.' },
+  { id: 'c5', name: 'Mathletes Challenge', teacher: 'Prof. Euler', subject: 'Mathematics', studentCount: 30, difficulty: 'Hard', active: true, description: 'Solve challenging math problems.' },
 ];
 
 const mockGoogleClassrooms: Classroom[] = [
-  { id: 'gc1', name: 'Grade 10 Biology (Google Classroom)', teacher: 'Ms. Darwin', subject: 'Science', studentCount: 28, difficulty: 'Medium', active: true },
-  { id: 'gc2', name: 'AP World History (Google Classroom)', teacher: 'Mr. Khan', subject: 'History', studentCount: 22, difficulty: 'Hard', active: true },
-  { id: 'gc3', name: 'Introduction to Python (Google Classroom)', teacher: 'Ms. Ada', subject: 'Computer Science', studentCount: 35, difficulty: 'Easy', active: false },
+  { id: 'gc1', name: 'Grade 10 Biology (Google Classroom)', teacher: 'Ms. Darwin', subject: 'Science', studentCount: 28, difficulty: 'Medium', active: true, description: 'Dive into the world of biology.' },
+  { id: 'gc2', name: 'AP World History (Google Classroom)', teacher: 'Mr. Khan', subject: 'History', studentCount: 22, difficulty: 'Hard', active: true, description: 'A comprehensive look at world history.' },
+  { id: 'gc3', name: 'Introduction to Python (Google Classroom)', teacher: 'Ms. Ada', subject: 'Computer Science', studentCount: 35, difficulty: 'Easy', active: false, description: 'Begin your coding journey with Python.' },
 ];
 
 const pageTranslations = {
