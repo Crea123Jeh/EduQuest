@@ -11,9 +11,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Tangerine', 'cursive', 'sans-serif'],
-        body: ['Tangerine', 'cursive', 'sans-serif'],
-        headline: ['Tangerine', 'cursive', 'sans-serif'],
+        sans: ['"Comic Neue"', 'system-ui', 'sans-serif'],
+        body: ['"Comic Neue"', 'system-ui', 'sans-serif'],
+        headline: ['"Comic Neue"', 'system-ui', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
