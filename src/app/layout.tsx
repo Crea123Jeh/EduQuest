@@ -17,11 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet" />
+        {/* Removed Nunito font import */}
       </head>
-      <body className="font-body antialiased">
+      <body className="font-sans antialiased"> {/* Changed from font-body to font-sans */}
         <AppProviders>
           {children}
           <Toaster />
