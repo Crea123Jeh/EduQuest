@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import type { Classroom, ClassroomStudent, ClassroomAnnouncement, ClassroomAssignment } from '@/types';
 import { ArrowLeft, Users, BookOpenText, Megaphone, ScrollText, UserCheck, CalendarDays, Sparkles, AlertTriangle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react'; // Added 'use'
 
 // Mock data for a single classroom - in a real app, this would be fetched
 const MOCK_CLASSROOM_DETAILS: Record<string, Classroom> = {
@@ -107,7 +107,8 @@ const pageTranslations = {
 };
 
 export default function ClassroomDetailPage({ params }: { params: { classroomId: string } }) {
-  const classroom = MOCK_CLASSROOM_DETAILS[params.classroomId] || null;
+  const resolvedParams = use(params); // Unwrap params
+  const classroom = MOCK_CLASSROOM_DETAILS[resolvedParams.classroomId] || null;
   const [lang, setLang] = useState<'en' | 'id'>('en');
 
   useEffect(() => {
@@ -255,4 +256,3 @@ export default function ClassroomDetailPage({ params }: { params: { classroomId:
     </div>
   );
 }
-
