@@ -11,9 +11,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Comic Neue"', 'system-ui', 'sans-serif'],
-        body: ['"Comic Neue"', 'system-ui', 'sans-serif'],
-        headline: ['"Comic Neue"', 'system-ui', 'sans-serif'],
+        sans: ['"PT Sans"', 'system-ui', 'sans-serif'],
+        body: ['"PT Sans"', 'system-ui', 'sans-serif'],
+        headline: ['"PT Sans"', 'system-ui', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
