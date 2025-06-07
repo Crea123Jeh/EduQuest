@@ -34,7 +34,7 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
       { id: 'h_q1', title: 'The Pharaoh\'s Lost Scepter', description: 'Navigate booby-trapped pyramids and decipher hieroglyphs to find the legendary scepter before rival explorers!', zoneId: 'history', type: 'Individual', difficulty: 'Medium', points: 120 },
       { id: 'h_q2', title: 'Silk Road: Caravan Masters', description: 'As co-leaders of a Silk Road caravan, make crucial navigation and trade decisions. Both must succeed to prosper!', zoneId: 'history', type: 'Collaborative', difficulty: 'Medium', points: 180 },
       { id: 'h_q3', title: 'Ethical Dilemma: The Revolutionary\'s Choice', description: 'You\'ve uncovered a plot that could change a nation. Expose it and risk chaos, or stay silent and maintain order? The fate of many rests on your decision.', zoneId: 'history', type: 'Ethical Dilemma', difficulty: 'Hard', points: 100 },
-      { id: 'h_q4', title: 'Borobudur Explorers: The Hidden Stupa', description: 'Embark on a collaborative expedition to uncover the secrets of Borobudur temple. Work with your team to decipher reliefs, solve ancient puzzles, and navigate the temple\'s intricate levels to find a legendary hidden stupa. Teamwork is crucial to overcome obstacles that require multiple explorers.', zoneId: 'history', type: 'Collaborative', difficulty: 'Hard', points: 210 },
+      { id: 'h_q4', title: 'Borobudur Explorers: The Hidden Stupa', description: 'Explore the majestic Borobudur temple map, uncover hidden knowledge spots, and answer questions to reveal its secrets. (Interactive Map Prototype)', zoneId: 'history', type: 'Collaborative', difficulty: 'Hard', points: 210 },
     ]
   },
   {
@@ -375,6 +375,8 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
     </div>
   );
 }
+    
+
     
 
     

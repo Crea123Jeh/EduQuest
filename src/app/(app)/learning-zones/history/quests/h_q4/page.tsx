@@ -1,18 +1,21 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Wand2, CheckCircle, Users, Eye, Lightbulb, ShieldQuestion, Flower, Tablet, HandHeart } from 'lucide-react';
+import { ArrowLeft, Wand2, CheckCircle, Users, MapPin, HelpCircle, ArrowUp, ArrowDown, ArrowLeftIcon as MoveLeftIcon, ArrowRightIcon as MoveRightIcon, Move } from 'lucide-react';
 
 const questDetails = {
   id: 'h_q4',
   titleKey: 'questTitle',
-  descriptionKey: 'questDescription',
+  descriptionKey: 'questDescriptionUpdated', // Updated key for new description
   zoneId: 'history',
   zoneNameKey: 'zoneName',
   type: 'Collaborative',
@@ -20,130 +23,114 @@ const questDetails = {
   points: 210,
 };
 
-type QuestStep = 'intro' | 'reliefCipher' | 'offeringChoice' | 'pressurePlates' | 'karmawibhangga' | 'conclusion';
+interface InteractiveSpot {
+  id: string;
+  x: number; // percentage from left
+  y: number; // percentage from top
+  questionKey: string;
+  questionType: 'info' | 'multiple-choice';
+  optionsKey?: string; // For multiple choice options
+  correctAnswerKey?: string; // For multiple choice correct answer
+  isAnswered: boolean;
+  requiredTool?: string; // For simulated collaborative tool requirement
+}
+
+const MAP_WIDTH = 800; // px, adjust as needed
+const MAP_HEIGHT = 800; // px, adjust as needed
+const PLAYER_SIZE = 32; // px
+const MOVE_STEP = 20; // px
+const INTERACTION_RADIUS = 40; // px
 
 const pageTranslations = {
   en: {
     questTitle: "Borobudur Explorers: The Hidden Stupa",
-    questDescription: "Embark on a collaborative expedition to uncover the secrets of Borobudur temple. Work with your team to decipher reliefs, solve ancient puzzles, and navigate the temple's intricate levels to find a legendary hidden stupa. Teamwork is crucial to overcome obstacles that require multiple explorers.",
+    questDescriptionOriginal: "Embark on a collaborative expedition to uncover the secrets of Borobudur temple. Work with your team to decipher reliefs, solve ancient puzzles, and navigate the temple's intricate levels to find a legendary hidden stupa. Teamwork is crucial to overcome obstacles that require multiple explorers.",
+    questDescriptionUpdated: "Navigate the ancient Borobudur temple map. Discover hidden knowledge spots, answer historical questions, and work with your (simulated) team to uncover the secrets of the Hidden Stupa. Use WASD or Arrow Keys to move.",
     zoneName: "History Zone",
     backToZone: "Back to History Zone",
-    // Intro
-    introTitle: "The Expedition Begins",
-    introText: "Your team of explorers stands before the majestic Borobudur. Legends speak of a hidden stupa containing profound wisdom. To find it, you must work together, combining your observations and insights. Communication and collaboration are your most valuable tools.",
-    proceedToChallenge1: "Begin Deciphering the Reliefs",
-    // Relief Cipher
-    reliefCipherTitle: "Challenge 1: The Whispering Reliefs",
-    reliefCipherScenario: "A vast, intricate relief stretches before you, depicting scenes from ancient Javanese life and Buddhist teachings. The first clue to the hidden stupa is encoded within. Your team must split up: One explorer focuses on the upper panels (detailing celestial beings), another on the lower panels (depicting earthly life). Both must find a matching symbol or repeated motif and describe it to the team.",
-    reliefCipherAction: "Analyze Assigned Relief Section",
-    reliefCipherSuccess: "Excellent observation! By combining insights from both upper and lower panels, your team spots a recurring lotus motif that only aligns when viewed from two perspectives. This reveals a hidden inscription: 'Follow the path of enlightenment upward.'",
-    proceedToOfferingChoice: "Approach the Sacred Shrine", // New button text
-    // Offering Choice (New Step)
-    offeringChoiceTitle: "Challenge 1.5: The Shrine of Offerings",
-    offeringChoiceScenario: "Following the inscription, your team discovers a small, serene shrine. Three items are presented as offerings. Your team may choose one to carry for guidance, or leave them undisturbed out of respect.",
-    offeringChoiceLotus: "Take the Lotus Blossom (Wisdom & Purity)",
-    offeringChoiceTablet: "Take the Stone Tablet (Guidance & Knowledge)",
-    offeringChoiceLeave: "Leave Offerings Undisturbed (Respect Sanctity)",
-    offeringFeedbackLotus: "You carefully take the Lotus Blossom. A sense of clarity and calm washes over your team.",
-    offeringFeedbackTablet: "The Stone Tablet feels ancient and heavy with knowledge. Its inscriptions seem to shift subtly.",
-    offeringFeedbackLeave: "Your team chooses to respect the sanctity of the shrine. A gentle breeze seems to approve.",
-    proceedToChallenge2: "Continue the Ascent", // Shared button for next step
-    // Pressure Plates
-    pressurePlatesTitle: "Challenge 2: The Guardians' Test",
-    pressurePlatesScenario: "You enter a circular chamber. In the center, a heavy stone dais looks movable, but it's too heavy for one. Around the room are three distinct pressure plates, each bearing a different mudra (hand gesture). The inscription from the previous clue hints that 'Three minds in harmony unlock the way.' Your team must activate all three plates simultaneously.",
-    pressurePlatesAction: "Coordinate Pressure Plate Activation",
-    pressurePlatesSuccess: "Synchronized! As all three plates are pressed, the stone dais lowers, revealing a hidden staircase leading further up the temple.",
-    proceedToChallenge3: "Descend to the Hidden Base", // Text updated
-    // Karmawibhangga
-    karmawibhanggaTitle: "Challenge 3: The Karmawibhangga's Lesson",
-    karmawibhanggaScenario: "You arrive at the hidden base of Borobudur, revealing the Karmawibhangga reliefs, which depict the law of cause and effect. One panel shows a man committing a selfish act, leading to suffering, while another shows an act of compassion leading to peace. A nearby inscription asks: 'To find the true stupa, which path embodies the temple's highest teaching?' Your team must discuss and choose.",
-    karmawibhanggaChoiceCompassion: "Path of Compassion & Shared Merit",
-    karmawibhanggaChoiceSelf: "Path of Individual Attainment",
-    karmawibhanggaSuccessCompassion: "Your team chose the Path of Compassion. The air shimmers, and a previously unseen passage opens towards the temple's peak. The spirits of Borobudur acknowledge your wisdom.",
-    karmawibhanggaFeedbackSelfPath: "Choosing this path, you find a secluded meditation spot with scriptures praising individual focus. While you gain personal insight, the path to the *hidden communal stupa* remains elusive. The inscriptions here suggest a different approach is needed for that greater discovery.",
-    returnToKarmaChoice: "Re-evaluate the Karmawibhangga",
-    proceedToConclusion: "Approach the Summit",
-    // Conclusion
-    conclusionTitle: "The Hidden Stupa Revealed!",
-    conclusionText: "Through outstanding teamwork, insightful discussions, and a shared understanding of Borobudur's teachings, your team has reached the summit and discovered the legendary hidden stupa. Its serene presence fills you with a sense of peace and shared accomplishment. You've not only explored a temple but also the depths of collaborative problem-solving.",
-    claimRewardButton: "Claim Your Reward & Reflect",
-    toastRewardTitle: "Expedition Successful!",
-    toastRewardDescription: (points: number) => `You've earned ${points} points for discovering the Hidden Stupa of Borobudur!`,
-    borobudurReliefImageAlt: "Intricate stone relief from Borobudur temple",
-    borobudurOfferingImageAlt: "Ancient shrine with offerings at Borobudur",
-    borobudurPressurePlateImageAlt: "Chamber with pressure plates in Borobudur",
-    borobudurKarmaImageAlt: "Karmawibhangga relief panel from Borobudur",
-    borobudurStupaImageAlt: "The main stupa or a hidden stupa of Borobudur",
+    playerAvatarAlt: "Player Avatar",
+    interactionPrompt: "Press 'E' or Click to Interact",
+    questionTitle: "Knowledge Check!",
+    submitAnswer: "Submit Answer",
+    closeDialog: "Close",
+    infoSpot1Question: "Borobudur is the world's largest Buddhist temple, located in Magelang, Central Java, Indonesia. It was built in the 9th century during the reign of the Sailendra Dynasty.",
+    mcSpot1Question: "Which of these is NOT one of the three main levels of Borobudur's cosmology?",
+    mcSpot1Options: ["Kamadhatu (world of desire)", "Arupadhatu (world of formlessness)", "Rupadhatu (world of forms)", "Swargaloka (heavenly realm)"],
+    mcSpot1CorrectAnswer: "Swargaloka (heavenly realm)",
+    infoSpot2Question: "The temple is decorated with 2,672 relief panels and 504 Buddha statues. The central dome is surrounded by 72 Buddha statues, each seated inside a perforated stupa.",
+    feedbackCorrect: "Correct! Your knowledge deepens.",
+    feedbackIncorrect: "Not quite. The correct answer was: {answer}.",
+    toastRewardTitle: "Quest Completed!",
+    toastRewardDescription: (points: number) => `You've explored Borobudur and earned ${points} points!`,
+    allSpotsVisited: "All knowledge spots visited! You've uncovered the temple's secrets.",
+    imagePlaceholderText: "IMPORTANT: Replace 'borobudur_map_placeholder.jpg' in public/images with your actual 'borobudur_map.jpg'",
+    controlsTitle: "Controls",
+    controlsWASD: "WASD or Arrow Keys to Move",
+    controlsInteract: "E or Click Spot to Interact",
+    scoreLabel: "Score:",
+    spotNotYetAvailable: "You need the 'Ancient Compass' (from a teammate) to access this hidden area.",
   },
   id: {
     questTitle: "Penjelajah Borobudur: Stupa Tersembunyi",
-    questDescription: "Mulailah ekspedisi kolaboratif untuk mengungkap rahasia Candi Borobudur. Bekerja samalah dengan tim Anda untuk menguraikan relief, memecahkan teka-teki kuno, dan menavigasi tingkat candi yang rumit untuk menemukan stupa tersembunyi yang legendaris. Kerja tim sangat penting untuk mengatasi rintangan yang membutuhkan banyak penjelajah.",
+    questDescriptionOriginal: "Mulailah ekspedisi kolaboratif untuk mengungkap rahasia Candi Borobudur. Bekerja samalah dengan tim Anda untuk menguraikan relief, memecahkan teka-teki kuno, dan menavigasi tingkat candi yang rumit untuk menemukan stupa tersembunyi yang legendaris. Kerja tim sangat penting untuk mengatasi rintangan yang membutuhkan banyak penjelajah.",
+    questDescriptionUpdated: "Navigasi peta Candi Borobudur kuno. Temukan titik pengetahuan tersembunyi, jawab pertanyaan sejarah, dan bekerja samalah dengan tim (simulasi) Anda untuk mengungkap rahasia Stupa Tersembunyi. Gunakan WASD atau Tombol Panah untuk bergerak.",
     zoneName: "Zona Sejarah",
     backToZone: "Kembali ke Zona Sejarah",
-    introTitle: "Ekspedisi Dimulai",
-    introText: "Tim penjelajah Anda berdiri di depan Borobudur yang megah. Legenda berbicara tentang stupa tersembunyi yang berisi kebijaksanaan mendalam. Untuk menemukannya, Anda harus bekerja sama, menggabungkan pengamatan dan wawasan Anda. Komunikasi dan kolaborasi adalah alat Anda yang paling berharga.",
-    proceedToChallenge1: "Mulai Menguraikan Relief",
-    reliefCipherTitle: "Tantangan 1: Relief yang Berbisik",
-    reliefCipherScenario: "Relief yang luas dan rumit terbentang di hadapan Anda, menggambarkan adegan dari kehidupan Jawa kuno dan ajaran Buddha. Petunjuk pertama menuju stupa tersembunyi dikodekan di dalamnya. Tim Anda harus berpisah: Satu penjelajah fokus pada panel atas (merinci makhluk surgawi), yang lain pada panel bawah (menggambarkan kehidupan duniawi). Keduanya harus menemukan simbol yang cocok atau motif berulang dan menjelaskannya kepada tim.",
-    reliefCipherAction: "Analisis Bagian Relief yang Ditugaskan",
-    reliefCipherSuccess: "Pengamatan yang luar biasa! Dengan menggabungkan wawasan dari panel atas dan bawah, tim Anda menemukan motif teratai berulang yang hanya selaras jika dilihat dari dua perspektif. Ini mengungkapkan prasasti tersembunyi: 'Ikuti jalan pencerahan ke atas.'",
-    proceedToOfferingChoice: "Dekati Kuil Suci",
-    offeringChoiceTitle: "Tantangan 1.5: Kuil Persembahan",
-    offeringChoiceScenario: "Mengikuti prasasti, tim Anda menemukan sebuah kuil kecil yang tenang. Tiga benda disajikan sebagai persembahan. Tim Anda dapat memilih satu untuk dibawa sebagai panduan, atau membiarkannya tidak terganggu sebagai tanda hormat.",
-    offeringChoiceLotus: "Ambil Bunga Teratai (Kebijaksanaan & Kemurnian)",
-    offeringChoiceTablet: "Ambil Lempeng Batu (Petunjuk & Pengetahuan)",
-    offeringChoiceLeave: "Biarkan Persembahan Tidak Terganggu (Hormati Kesucian)",
-    offeringFeedbackLotus: "Anda dengan hati-hati mengambil Bunga Teratai. Rasa kejernihan dan ketenangan meliputi tim Anda.",
-    offeringFeedbackTablet: "Lempeng Batu terasa kuno dan berat dengan pengetahuan. Prasastinya tampak berubah secara halus.",
-    offeringFeedbackLeave: "Tim Anda memilih untuk menghormati kesucian kuil. Angin sepoi-sepoi tampak menyetujuinya.",
-    proceedToChallenge2: "Lanjutkan Pendakian",
-    pressurePlatesTitle: "Tantangan 2: Ujian Para Penjaga",
-    pressurePlatesScenario: "Anda memasuki sebuah ruangan melingkar. Di tengah, sebuah panggung batu besar terlihat bisa digerakkan, tetapi terlalu berat untuk satu orang. Di sekitar ruangan ada tiga pelat tekanan yang berbeda, masing-masing dengan mudra (sikap tangan) yang berbeda. Prasasti dari petunjuk sebelumnya mengisyaratkan bahwa 'Tiga pikiran dalam harmoni membuka jalan.' Tim Anda harus mengaktifkan ketiga pelat secara bersamaan.",
-    pressurePlatesAction: "Koordinasikan Aktivasi Pelat Tekan",
-    pressurePlatesSuccess: "Sinkron! Saat ketiga pelat ditekan, panggung batu itu turun, mengungkapkan tangga tersembunyi yang mengarah lebih jauh ke atas candi.",
-    proceedToChallenge3: "Turun ke Dasar Tersembunyi",
-    karmawibhanggaTitle: "Tantangan 3: Pelajaran Karmawibhangga",
-    karmawibhanggaScenario: "Anda tiba di dasar tersembunyi Borobudur, mengungkapkan relief Karmawibhangga, yang menggambarkan hukum sebab akibat. Satu panel menunjukkan seorang pria melakukan tindakan egois, yang mengarah pada penderitaan, sementara panel lain menunjukkan tindakan kasih sayang yang mengarah pada kedamaian. Sebuah prasasti di dekatnya bertanya: 'Untuk menemukan stupa sejati, jalan mana yang mewujudkan ajaran tertinggi candi?' Tim Anda harus berdiskusi dan memilih.",
-    karmawibhanggaChoiceCompassion: "Jalan Kasih Sayang & Pahala Bersama",
-    karmawibhanggaChoiceSelf: "Jalan Pencapaian Individu",
-    karmawibhanggaSuccessCompassion: "Tim Anda memilih Jalan Kasih Sayang. Udara bergetar, dan sebuah lorong yang sebelumnya tak terlihat terbuka menuju puncak candi. Roh-roh Borobudur mengakui kebijaksanaan Anda.",
-    karmawibhanggaFeedbackSelfPath: "Memilih jalan ini, Anda menemukan tempat meditasi terpencil dengan kitab suci yang memuji fokus individu. Meskipun Anda mendapatkan wawasan pribadi, jalan menuju *stupa komunal tersembunyi* tetap sulit dipahami. Prasasti di sini menyarankan pendekatan yang berbeda diperlukan untuk penemuan yang lebih besar itu.",
-    returnToKarmaChoice: "Evaluasi Ulang Karmawibhangga",
-    proceedToConclusion: "Dekati Puncak",
-    conclusionTitle: "Stupa Tersembunyi Terungkap!",
-    conclusionText: "Melalui kerja tim yang luar biasa, diskusi yang mendalam, dan pemahaman bersama tentang ajaran Borobudur, tim Anda telah mencapai puncak dan menemukan stupa tersembunyi yang legendaris. Kehadirannya yang tenang memenuhi Anda dengan rasa damai dan pencapaian bersama. Anda tidak hanya menjelajahi sebuah candi tetapi juga kedalaman pemecahan masalah kolaboratif.",
-    claimRewardButton: "Klaim Hadiah & Renungkan",
-    toastRewardTitle: "Ekspedisi Berhasil!",
-    toastRewardDescription: (points: number) => `Anda mendapatkan ${points} poin karena menemukan Stupa Tersembunyi Borobudur!`,
-    borobudurReliefImageAlt: "Relief batu rumit dari Candi Borobudur",
-    borobudurOfferingImageAlt: "Kuil kuno dengan persembahan di Borobudur",
-    borobudurPressurePlateImageAlt: "Ruangan dengan pelat tekan di Borobudur",
-    borobudurKarmaImageAlt: "Panel relief Karmawibhangga dari Borobudur",
-    borobudurStupaImageAlt: "Stupa utama atau stupa tersembunyi Borobudur",
+    playerAvatarAlt: "Avatar Pemain",
+    interactionPrompt: "Tekan 'E' atau Klik untuk Berinteraksi",
+    questionTitle: "Cek Pengetahuan!",
+    submitAnswer: "Kirim Jawaban",
+    closeDialog: "Tutup",
+    infoSpot1Question: "Borobudur adalah candi Buddha terbesar di dunia, terletak di Magelang, Jawa Tengah, Indonesia. Dibangun pada abad ke-9 pada masa pemerintahan Dinasti Sailendra.",
+    mcSpot1Question: "Manakah dari berikut ini yang BUKAN merupakan salah satu dari tiga tingkat utama kosmologi Borobudur?",
+    mcSpot1Options: ["Kamadhatu (alam keinginan)", "Arupadhatu (alam tanpa rupa)", "Rupadhatu (alam berwujud)", "Swargaloka (alam surga)"],
+    mcSpot1CorrectAnswer: "Swargaloka (alam surga)",
+    infoSpot2Question: "Candi ini dihiasi dengan 2.672 panel relief dan 504 arca Buddha. Kubah pusat dikelilingi oleh 72 arca Buddha, masing-masing duduk di dalam stupa berlubang.",
+    feedbackCorrect: "Benar! Pengetahuanmu semakin mendalam.",
+    feedbackIncorrect: "Kurang tepat. Jawaban yang benar adalah: {answer}.",
+    toastRewardTitle: "Misi Selesai!",
+    toastRewardDescription: (points: number) => `Anda telah menjelajahi Borobudur dan mendapatkan ${points} poin!`,
+    allSpotsVisited: "Semua titik pengetahuan telah dikunjungi! Anda telah mengungkap rahasia candi.",
+    imagePlaceholderText: "PENTING: Ganti 'borobudur_map_placeholder.jpg' di public/images dengan 'borobudur_map.jpg' Anda yang sebenarnya.",
+    controlsTitle: "Kontrol",
+    controlsWASD: "WASD atau Tombol Panah untuk Bergerak",
+    controlsInteract: "E atau Klik Titik untuk Berinteraksi",
+    scoreLabel: "Skor:",
+    spotNotYetAvailable: "Anda memerlukan 'Kompas Kuno' (dari rekan tim) untuk mengakses area tersembunyi ini.",
   }
 };
 
-export default function BorobudurExplorersQuestPage() {
+
+export default function BorobudurExplorersMapPage() {
   const [lang, setLang] = useState<'en' | 'id'>('en');
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState<QuestStep>('intro');
-  const [karmaChoiceMade, setKarmaChoiceMade] = useState<'compassion' | 'self' | null>(null);
-  const [offeringChoiceFeedback, setOfferingChoiceFeedback] = useState<string>('');
+  
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [playerPosition, setPlayerPosition] = useState({ x: 50, y: 50 }); // Initial position (percentage)
+  const [activeSpot, setActiveSpot] = useState<InteractiveSpot | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [score, setScore] = useState(0);
 
+  const [interactiveSpots, setInteractiveSpots] = useState<InteractiveSpot[]>([
+    { id: 'spot1', x: 20, y: 25, questionKey: 'infoSpot1Question', questionType: 'info', isAnswered: false },
+    { id: 'spot2', x: 70, y: 60, questionKey: 'mcSpot1Question', questionType: 'multiple-choice', optionsKey: 'mcSpot1Options', correctAnswerKey: 'mcSpot1CorrectAnswer', isAnswered: false },
+    { id: 'spot3', x: 45, y: 80, questionKey: 'infoSpot2Question', questionType: 'info', isAnswered: false, requiredTool: 'Ancient Compass'},
+    // Add up to 7 more spots here
+  ]);
 
   useEffect(() => {
     const updateLang = () => {
       const savedSettings = localStorage.getItem('user-app-settings');
-      let newLang: 'en' | 'id' = 'en';
+      let newLangKey: 'en' | 'id' = 'en';
       if (savedSettings) {
         try {
           const parsed = JSON.parse(savedSettings);
           if (parsed.language && (parsed.language === 'en' || parsed.language === 'id')) {
-            newLang = parsed.language;
+            newLangKey = parsed.language;
           }
-        } catch (e) { console.error("Error reading lang for BorobudurExplorersPage", e); }
+        } catch (e) { console.error("Error reading lang for Borobudur Map Page", e); }
       }
-      setLang(newLang);
+      setLang(newLangKey);
     };
     updateLang();
     const handleStorageChange = (event: StorageEvent) => {
@@ -160,180 +147,98 @@ export default function BorobudurExplorersQuestPage() {
     zoneName: t[questDetails.zoneNameKey as keyof typeof t] || questDetails.zoneNameKey,
   };
 
-  const handleAction = (nextStep: QuestStep, actionContext?: 'offering' | 'karma', choice?: 'lotus' | 'tablet' | 'leave' | 'compassion' | 'self') => {
-    if (actionContext === 'offering') {
-      if (choice === 'lotus') setOfferingChoiceFeedback(t.offeringFeedbackLotus);
-      else if (choice === 'tablet') setOfferingChoiceFeedback(t.offeringFeedbackTablet);
-      else if (choice === 'leave') setOfferingChoiceFeedback(t.offeringFeedbackLeave);
-      // For offerings, we always proceed to the next main step after showing feedback.
-      // The button to proceed will be enabled by the feedback being set.
-      setCurrentStep(nextStep); // This is actually setting currentStep to 'offeringChoice' stage itself
-                                // The actual advancement will be handled by a separate "Proceed" button in that stage.
-                                // Let's adjust: handleAction from offering choice screen should lead to pressurePlates
-    } else if (actionContext === 'karma') {
-      if (choice === 'compassion') {
-        setKarmaChoiceMade('compassion');
-        setCurrentStep(nextStep); // This should be 'conclusion'
-      } else if (choice === 'self') {
-        setKarmaChoiceMade('self');
-        // Stay on 'karmawibhangga' step to show specific feedback for 'self' path.
-        // The user will then have to click the "Re-evaluate" button which resets karmaChoiceMade
-        // or conceptually click the "Compassion" path button next.
-        setCurrentStep('karmawibhangga'); // Stay on the same step, feedback will change
+  const handleMovement = useCallback((dx: number, dy: number) => {
+    setPlayerPosition(prev => ({
+      x: Math.max(0, Math.min(100 - (PLAYER_SIZE / MAP_WIDTH * 100), prev.x + dx)),
+      y: Math.max(0, Math.min(100 - (PLAYER_SIZE / MAP_HEIGHT * 100), prev.y + dy)),
+    }));
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const stepPercentageX = (MOVE_STEP / MAP_WIDTH) * 100;
+      const stepPercentageY = (MOVE_STEP / MAP_HEIGHT) * 100;
+      switch (event.key.toLowerCase()) {
+        case 'w': case 'arrowup': handleMovement(0, -stepPercentageY); break;
+        case 's': case 'arrowdown': handleMovement(0, stepPercentageY); break;
+        case 'a': case 'arrowleft': handleMovement(-stepPercentageX, 0); break;
+        case 'd': case 'arrowright': handleMovement(stepPercentageX, 0); break;
+        case 'e':
+          const nearbySpot = interactiveSpots.find(spot => !spot.isAnswered && isNearby(spot));
+          if (nearbySpot) handleSpotInteraction(nearbySpot);
+          break;
       }
-    } else {
-      setCurrentStep(nextStep);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleMovement, interactiveSpots]);
+
+  const isNearby = (spot: InteractiveSpot) => {
+    const playerCenterX = playerPosition.x + (PLAYER_SIZE / MAP_WIDTH * 100) / 2;
+    const playerCenterY = playerPosition.y + (PLAYER_SIZE / MAP_HEIGHT * 100) / 2;
+    const spotCenterX = spot.x + (PLAYER_SIZE / MAP_WIDTH * 100) / 2; // Assuming spots are same size for interaction
+    const spotCenterY = spot.y + (PLAYER_SIZE / MAP_HEIGHT * 100) / 2;
+    
+    const interactionRadiusPercentX = (INTERACTION_RADIUS / MAP_WIDTH) * 100;
+    const interactionRadiusPercentY = (INTERACTION_RADIUS / MAP_HEIGHT) * 100;
+
+    const dx = playerCenterX - spotCenterX;
+    const dy = playerCenterY - spotCenterY;
+    return Math.abs(dx) < interactionRadiusPercentX && Math.abs(dy) < interactionRadiusPercentY;
+  };
+  
+  const handleSpotInteraction = (spot: InteractiveSpot) => {
+    if (spot.isAnswered) return;
+
+    // Simulate tool requirement
+    if (spot.requiredTool) {
+        toast({ title: "Tool Required", description: t.spotNotYetAvailable, variant: "destructive" });
+        return;
+    }
+    setActiveSpot(spot);
+    setSelectedAnswer(null); // Reset selected answer for MCQs
+  };
+
+  const handleCloseDialog = () => {
+    setActiveSpot(null);
+  };
+
+  const handleSubmitAnswer = () => {
+    if (!activeSpot) return;
+
+    if (activeSpot.questionType === 'multiple-choice') {
+      const correctAnswer = t[activeSpot.correctAnswerKey as keyof typeof t];
+      if (selectedAnswer === correctAnswer) {
+        toast({ title: t.feedbackCorrect, variant: "default" });
+        setScore(prev => prev + 10); // Add points for correct answer
+      } else {
+        toast({ title: t.feedbackIncorrect({ answer: correctAnswer }), variant: "destructive" });
+      }
+    }
+    // For 'info' type, just closing is enough. Points could be awarded on visit.
+    setScore(prev => prev + 5); // Add points for visiting/interacting
+
+    setInteractiveSpots(prevSpots =>
+      prevSpots.map(s => (s.id === activeSpot.id ? { ...s, isAnswered: true } : s))
+    );
+    setActiveSpot(null);
+
+    if (interactiveSpots.every(s => s.id === activeSpot.id || s.isAnswered)) {
+        checkCompletion();
     }
   };
   
-  const handleOfferingProceed = () => {
-    setCurrentStep('pressurePlates');
-    setOfferingChoiceFeedback(''); // Clear feedback for next stage
-  };
-
-  const handleKarmaReevaluate = () => {
-    setKarmaChoiceMade(null); // Allow making a new choice
-  };
-
-
-  const handleClaimReward = () => {
-    toast({
-      title: t.toastRewardTitle,
-      description: t.toastRewardDescription(questDetails.points),
-    });
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 'intro':
-        return (
-          <Card>
-            <CardHeader><CardTitle>{t.introTitle}</CardTitle></CardHeader>
-            <CardContent>
-              <Image src="https://placehold.co/600x350.png" alt={t.borobudurReliefImageAlt} width={600} height={350} className="rounded-md mb-4" data-ai-hint="borobudur temple entrance ancient" />
-              <p>{t.introText}</p>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => handleAction('reliefCipher')} className="w-full">{t.proceedToChallenge1}</Button>
-            </CardFooter>
-          </Card>
-        );
-      case 'reliefCipher':
-        return (
-          <Card>
-            <CardHeader><CardTitle>{t.reliefCipherTitle}</CardTitle></CardHeader>
-            <CardContent>
-              <Image src="https://placehold.co/600x350.png" alt={t.borobudurReliefImageAlt} width={600} height={350} className="rounded-md mb-4" data-ai-hint="borobudur relief detail carving" />
-              <p className="mb-2">{t.reliefCipherScenario}</p>
-              <p className="text-sm text-muted-foreground">Simulated: Your team discusses findings...</p>
-              <Button onClick={() => { /* Simulate individual action */ }} className="w-full mt-2" variant="outline">{t.reliefCipherAction}</Button>
-              <p className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-md text-green-700 dark:text-green-300">{t.reliefCipherSuccess}</p>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => handleAction('offeringChoice')} className="w-full">{t.proceedToOfferingChoice}</Button>
-            </CardFooter>
-          </Card>
-        );
-      case 'offeringChoice':
-        return (
-          <Card>
-            <CardHeader><CardTitle>{t.offeringChoiceTitle}</CardTitle></CardHeader>
-            <CardContent>
-              <Image src="https://placehold.co/600x350.png" alt={t.borobudurOfferingImageAlt} width={600} height={350} className="rounded-md mb-4" data-ai-hint="shrine offering temple" />
-              <p className="mb-4">{t.offeringChoiceScenario}</p>
-              <div className="space-y-2">
-                <Button onClick={() => handleAction('offeringChoice', 'offering', 'lotus')} className="w-full flex items-center justify-start" variant="outline">
-                  <Flower className="mr-2 h-5 w-5 text-pink-500" /> {t.offeringChoiceLotus}
-                </Button>
-                <Button onClick={() => handleAction('offeringChoice', 'offering', 'tablet')} className="w-full flex items-center justify-start" variant="outline">
-                  <Tablet className="mr-2 h-5 w-5 text-gray-500" /> {t.offeringChoiceTablet}
-                </Button>
-                <Button onClick={() => handleAction('offeringChoice', 'offering', 'leave')} className="w-full flex items-center justify-start" variant="outline">
-                  <HandHeart className="mr-2 h-5 w-5 text-green-500" /> {t.offeringChoiceLeave}
-                </Button>
-              </div>
-              {offeringChoiceFeedback && (
-                <p className="mt-4 p-3 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-md text-blue-700 dark:text-blue-300">
-                  {offeringChoiceFeedback}
-                </p>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button onClick={handleOfferingProceed} className="w-full" disabled={!offeringChoiceFeedback}>{t.proceedToChallenge2}</Button>
-            </CardFooter>
-          </Card>
-        );
-      case 'pressurePlates':
-        return (
-          <Card>
-            <CardHeader><CardTitle>{t.pressurePlatesTitle}</CardTitle></CardHeader>
-            <CardContent>
-              <Image src="https://placehold.co/600x350.png" alt={t.borobudurPressurePlateImageAlt} width={600} height={350} className="rounded-md mb-4" data-ai-hint="ancient puzzle chamber floor" />
-              <p className="mb-2">{t.pressurePlatesScenario}</p>
-              <p className="text-sm text-muted-foreground">Simulated: Your team plans their positions...</p>
-              <Button onClick={() => { /* Simulate individual action */ }} className="w-full mt-2" variant="outline">{t.pressurePlatesAction}</Button>
-               <p className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-md text-green-700 dark:text-green-300">{t.pressurePlatesSuccess}</p>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => handleAction('karmawibhangga')} className="w-full">{t.proceedToChallenge3}</Button>
-            </CardFooter>
-          </Card>
-        );
-      case 'karmawibhangga':
-        return (
-          <Card>
-            <CardHeader><CardTitle>{t.karmawibhanggaTitle}</CardTitle></CardHeader>
-            <CardContent>
-              <Image src="https://placehold.co/600x350.png" alt={t.borobudurKarmaImageAlt} width={600} height={350} className="rounded-md mb-4" data-ai-hint="borobudur karma relief detail" />
-              <p className="mb-4">{t.karmawibhanggaScenario}</p>
-              {!karmaChoiceMade || karmaChoiceMade === 'self' ? (
-                <div className="space-y-2">
-                  <Button onClick={() => handleAction('conclusion', 'karma', 'compassion')} className="w-full" disabled={karmaChoiceMade === 'self'}>
-                    {t.karmawibhanggaChoiceCompassion}
-                  </Button>
-                  <Button onClick={() => handleAction('karmawibhangga', 'karma', 'self')} className="w-full" variant="outline" disabled={karmaChoiceMade === 'self'}>
-                    {t.karmawibhanggaChoiceSelf}
-                  </Button>
-                </div>
-              ) : null}
-
-              {karmaChoiceMade === 'compassion' && (
-                 <p className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-md text-green-700 dark:text-green-300">{t.karmawibhanggaSuccessCompassion}</p>
-              )}
-              {karmaChoiceMade === 'self' && (
-                <>
-                  <p className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-md text-yellow-700 dark:text-yellow-300">{t.karmawibhanggaFeedbackSelfPath}</p>
-                  <Button onClick={handleKarmaReevaluate} className="w-full mt-3" variant="link">{t.returnToKarmaChoice}</Button>
-                </>
-              )}
-            </CardContent>
-            {karmaChoiceMade === 'compassion' && (
-                <CardFooter>
-                    <Button onClick={() => handleAction('conclusion')} className="w-full">{t.proceedToConclusion}</Button>
-                </CardFooter>
-            )}
-          </Card>
-        );
-      case 'conclusion':
-        return (
-          <Card className="text-center">
-            <CardHeader>
-               <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
-              <CardTitle className="text-2xl">{t.conclusionTitle}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Image src="https://placehold.co/600x350.png" alt={t.borobudurStupaImageAlt} width={600} height={350} className="rounded-md mb-4 mx-auto" data-ai-hint="borobudur main stupa serene" />
-              <p>{t.conclusionText}</p>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={handleClaimReward} className="w-full">{t.claimRewardButton}</Button>
-            </CardFooter>
-          </Card>
-        );
-      default:
-        return <p>Unknown quest step.</p>;
+  const checkCompletion = () => {
+     if (interactiveSpots.filter(s => !s.requiredTool).every(s => s.isAnswered)) {
+      toast({
+        title: t.toastRewardTitle,
+        description: t.toastRewardDescription(questDetails.points + score),
+      });
+      // Potentially navigate away or show a completion message on the page
     }
   };
+  
+  const allNonToolSpotsAnswered = interactiveSpots.filter(s => !s.requiredTool).every(s => s.isAnswered);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
@@ -356,10 +261,117 @@ export default function BorobudurExplorersQuestPage() {
         </CardHeader>
       </Card>
 
-      <div className="max-w-2xl mx-auto">
-        {renderStepContent()}
-      </div>
+      <Card className="shadow-lg">
+        <CardHeader>
+            <div className="flex justify-between items-center">
+                <CardTitle>Borobudur Temple Map</CardTitle>
+                <p className="text-lg font-semibold">{t.scoreLabel} <span className="text-accent">{score}</span></p>
+            </div>
+            <CardDescription>{t.imagePlaceholderText}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center">
+          <div ref={mapRef} className="relative border-2 border-primary rounded-md overflow-hidden" style={{ width: `${MAP_WIDTH}px`, height: `${MAP_HEIGHT}px` }}>
+            <Image
+              src="/images/borobudur_map_placeholder.jpg" // User needs to replace this
+              alt="Borobudur Map"
+              layout="fill"
+              objectFit="cover"
+              data-ai-hint="borobudur temple aerial"
+            />
+            {/* Player Avatar */}
+            <div
+              style={{
+                position: 'absolute',
+                left: `${playerPosition.x}%`,
+                top: `${playerPosition.y}%`,
+                width: `${PLAYER_SIZE}px`,
+                height: `${PLAYER_SIZE}px`,
+                backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                borderRadius: '50%',
+                border: '2px solid white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'left 0.1s linear, top 0.1s linear',
+                boxShadow: '0 0 8px rgba(0,0,0,0.5)',
+              }}
+              title={t.playerAvatarAlt}
+            >
+              <Move size={PLAYER_SIZE * 0.6} className="text-white" />
+            </div>
+
+            {/* Interactive Spots */}
+            {interactiveSpots.map(spot => (
+              <button
+                key={spot.id}
+                onClick={() => handleSpotInteraction(spot)}
+                disabled={spot.isAnswered}
+                className={`absolute p-1 rounded-full transition-all duration-200
+                            ${spot.isAnswered ? 'bg-green-500 opacity-50 cursor-default' : 'bg-yellow-400 hover:bg-yellow-300 animate-pulse'}
+                            ${isNearby(spot) && !spot.isAnswered ? 'ring-4 ring-yellow-300' : ''}`}
+                style={{
+                  left: `calc(${spot.x}% - ${PLAYER_SIZE/2}px)`,
+                  top: `calc(${spot.y}% - ${PLAYER_SIZE/2}px)`,
+                  width: `${PLAYER_SIZE}px`,
+                  height: `${PLAYER_SIZE}px`,
+                }}
+                title={spot.isAnswered ? "Visited" : t.interactionPrompt}
+              >
+                {spot.isAnswered ? <CheckCircle size={PLAYER_SIZE * 0.7} className="text-white" /> : <HelpCircle size={PLAYER_SIZE * 0.7} className="text-black" />}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4 p-4 border rounded-lg bg-muted w-full max-w-md">
+            <h3 className="font-semibold text-center mb-2">{t.controlsTitle}</h3>
+            <div className="flex justify-around items-center">
+                <p className="text-sm text-muted-foreground">{t.controlsWASD}</p>
+                <div className="grid grid-cols-3 gap-1">
+                    <div></div>
+                    <Button variant="outline" size="icon" onClick={() => handleMovement(0, -(MOVE_STEP / MAP_HEIGHT) * 100)} aria-label="Move Up"><ArrowUp/></Button>
+                    <div></div>
+                    <Button variant="outline" size="icon" onClick={() => handleMovement(-(MOVE_STEP / MAP_WIDTH) * 100, 0)} aria-label="Move Left"><MoveLeftIcon/></Button>
+                    <Button variant="outline" size="icon" onClick={() => handleMovement(0, (MOVE_STEP / MAP_HEIGHT) * 100)} aria-label="Move Down"><ArrowDown/></Button>
+                    <Button variant="outline" size="icon" onClick={() => handleMovement((MOVE_STEP / MAP_WIDTH) * 100, 0)} aria-label="Move Right"><MoveRightIcon/></Button>
+                </div>
+            </div>
+             <p className="text-sm text-muted-foreground text-center mt-2">{t.controlsInteract}</p>
+          </div>
+          {allNonToolSpotsAnswered && (
+            <p className="mt-4 text-green-600 font-semibold">{t.allSpotsVisited}</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {activeSpot && (
+        <Dialog open={!!activeSpot} onOpenChange={() => activeSpot && !activeSpot.isAnswered ? setActiveSpot(null) : null}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t.questionTitle}</DialogTitle>
+              <DialogDescription>
+                {t[activeSpot.questionKey as keyof typeof t]}
+              </DialogDescription>
+            </DialogHeader>
+            {activeSpot.questionType === 'multiple-choice' && activeSpot.optionsKey && (
+              <RadioGroup value={selectedAnswer || ""} onValueChange={setSelectedAnswer} className="my-4 space-y-2">
+                {(t[activeSpot.optionsKey as keyof typeof t] as string[]).map((option: string, index: number) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option} id={`option-${index}`} />
+                    <Label htmlFor={`option-${index}`}>{option}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCloseDialog}>{t.closeDialog}</Button>
+              {(activeSpot.questionType === 'info' || (activeSpot.questionType === 'multiple-choice' && selectedAnswer)) && (
+                <Button onClick={handleSubmitAnswer}>{t.submitAnswer}</Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
 
+    
