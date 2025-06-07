@@ -25,11 +25,11 @@ const iconMap: Record<string, LucideIcon> = {
 
 const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
   {
-    id: 'history', name: 'History Zone: Time Travelers\' Guild HQ',
+    id: 'history', name: 'History Zone: Time Travelers\' Guild',
     description: 'Welcome, Time Agent! Your mission, should you choose to accept it, involves navigating pivotal moments in history. From decoding ancient scrolls in Egypt to strategizing D-Day landings, your choices will shape the past (or at least your grade!). Watch out for temporal paradoxes!',
     iconKey: 'History', subject: 'History',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'ancient library time portal',
+    aiHint: 'history travel',
     quests: [
       { id: 'h_q1', title: 'The Pharaoh\'s Lost Scepter', description: 'Navigate booby-trapped pyramids and decipher hieroglyphs to find the legendary scepter before rival explorers!', zoneId: 'history', type: 'Individual', difficulty: 'Medium', points: 120 },
       { id: 'h_q2', title: 'Silk Road: Caravan Masters', description: 'As co-leaders of a Silk Road caravan, make crucial navigation and trade decisions. Both must succeed to prosper!', zoneId: 'history', type: 'Collaborative', difficulty: 'Medium', points: 180 },
@@ -37,11 +37,11 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     ]
   },
   {
-    id: 'math', name: 'Mathematics Realm: The Number Ninjas\' Citadel',
+    id: 'math', name: 'Mathematics Realm: Number Ninjas\' Citadel',
     description: 'Master the art of calculation and logic in this high-tech dojo. Solve cryptic numerical puzzles, duel with equation-wielding robots, and prove your worth as a true Number Ninja. Only the sharpest minds will prevail!',
     iconKey: 'Calculator', subject: 'Mathematics',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'futuristic dojo numbers',
+    aiHint: 'math dojo',
     quests: [
       { id: 'm_q1', title: 'Fractal Fortress Defense', description: 'Configure and deploy a fractal shield to protect the Citadel from incoming data corruption. Balance shield strength with energy cost based on fractal type and iteration complexity.', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
       { id: 'm_q2', title: 'Algorithm Assembly Challenge: Precision Protocol', description: 'Construct a precise data validation and calculation protocol. Each component has a computational cost. Assemble the correct sequence within the given budget to succeed!', zoneId: 'math', type: 'Collaborative', difficulty: 'Medium', points: 150 },
@@ -53,7 +53,7 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     description: 'Don your lab coat and goggles! Here, you\'ll concoct explosive potions (safely!), build bizarre contraptions, and maybe even reanimate a friendly creature or two. Expect the unexpected, and remember: it\'s not a mistake, it\'s a discovery!',
     iconKey: 'FlaskConical', subject: 'Science',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'quirky science lab',
+    aiHint: 'science lab',
     quests: [
       { id: 's_q1', title: 'Creature Feature: Build-A-Beast', description: 'Combine DNA samples to design and nurture your own unique creature. The AI will even name it for you!', zoneId: 'science', type: 'Individual', difficulty: 'Medium', points: 130 },
       { id: 's_q2', title: 'Eco-Challenge: Operation Biosphere Rescue', description: 'A miniature ecosystem is collapsing! Identify pollutants, introduce helpful species, and restore balance before it\'s too late. Each intervention uses one cycle.', zoneId: 'science', type: 'Collaborative', difficulty: 'Hard', points: 190 },
@@ -61,11 +61,11 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     ]
   },
   {
-    id: 'geography', name: 'World Explorer: The Cartographer\'s Compass HQ',
+    id: 'geography', name: 'World Explorer: The Cartographer\'s Compass',
     description: 'Grab your compass and map! Explore dense jungles, navigate vast oceans, and scale towering mountains. Discover ancient ruins and document unique cultures. Adventure awaits at every coordinate!',
     iconKey: 'Globe', subject: 'Geography',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'explorer map jungle',
+    aiHint: 'map adventure',
     quests: [
       { id: 'g_q1', title: 'The Lost City of El Dorado', description: 'Follow ancient clues to find the legendary city of gold. Beware of treacherous terrain and rival explorers!', zoneId: 'geography', type: 'Individual', difficulty: 'Hard', points: 200 },
     ]
@@ -75,7 +75,7 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     description: 'Your imagination is the only limit! Sculpt mythical beasts from digital clay, paint vibrant murals on virtual walls, or animate epic tales. Let your creativity flow and inspire the world!',
     iconKey: 'Palette', subject: 'Art',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'fantasy art tools',
+    aiHint: 'art studio',
     quests: [
       { id: 'a_q1', title: 'Mural of Myths', description: 'Collaborate to create a massive digital mural depicting legendary creatures and epic battles.', zoneId: 'art', type: 'Collaborative', difficulty: 'Medium', points: 160 },
     ]
@@ -85,7 +85,7 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     description: 'Compose chart-topping hits, conduct virtual orchestras, or master exotic instruments. From classical symphonies to futuristic synth-scapes, the stage is yours!',
     iconKey: 'Music', subject: 'Music',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'futuristic music stage',
+    aiHint: 'music stage',
     quests: [
        { id: 'mu_q1', title: 'Symphony of the Stars', description: 'Compose an original piece of music inspired by the cosmos. Use unique sound effects to represent planets and nebulae.', zoneId: 'music', type: 'Individual', difficulty: 'Hard', points: 180 },
        { id: 'mu_q2', title: 'Rhythm Renegade: Beat Master Challenge', description: 'Test your rhythmic precision! Listen to complex beats and recreate them using a virtual drum pad.', zoneId: 'music', type: 'Individual', difficulty: 'Medium', points: 160 },
@@ -93,11 +93,11 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     ]
   },
   {
-    id: 'languages', name: 'Language Hub: The Polyglot\'s Portal Chamber',
+    id: 'languages', name: 'Language Hub: The Polyglot\'s Portal',
     description: 'Step through portals to converse with historical figures, negotiate with alien diplomats, or decipher ancient texts. Master new tongues and unlock global secrets!',
     iconKey: 'Languages', subject: 'Languages',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'glowing language portal',
+    aiHint: 'language portal',
     quests: [
        { id: 'l_q1', title: 'The Rosetta Stone Riddle', description: 'Translate a series of cryptic messages in three different ancient languages to unlock a hidden treasure.', zoneId: 'languages', type: 'Individual', difficulty: 'Hard', points: 190 },
     ]
@@ -107,7 +107,7 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     description: 'Code AI assistants, design smart cities, or defend against cyber threats in this high-tech sandbox. The future is in your hands – build it, break it, and rebuild it better!',
     iconKey: 'Rocket', subject: 'Technology',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'holographic tech interface',
+    aiHint: 'tech code',
     quests: [
        { id: 't_q1', title: 'AI Uprising: Code Red', description: 'A rogue AI is causing system-wide anomalies! Identify the correct debug action for each reported issue to restore system integrity before it\'s too late.', zoneId: 'technology', type: 'Collaborative', difficulty: 'Hard', points: 220 },
        { id: 't_q2', title: 'Cybersecurity: Firewall Configuration', description: 'Malicious packets are trying to infiltrate the network! Configure firewall rules to block threats while allowing legitimate services.', zoneId: 'technology', type: 'Individual', difficulty: 'Medium', points: 160 },
@@ -115,21 +115,21 @@ const MOCK_ZONES_DATA: Omit<LearningZone, 'iconKey'> & { iconKey: string }[] = [
     ]
   },
   {
-    id: 'physics', name: 'Physics Playground: Quantum Leap Lab Complex',
+    id: 'physics', name: 'Physics Playground: Quantum Leap Lab',
     description: 'Defy gravity, bend light, and explore the bizarre world of quantum mechanics. Conduct experiments that would make Einstein jealous, but try not to create any black holes in the classroom!',
     iconKey: 'Atom', subject: 'Physics',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'anti gravity chamber',
+    aiHint: 'physics quantum',
     quests: [
        { id: 'p_q1', title: 'The Wormhole Wobble', description: 'Stabilize a miniature wormhole by correctly applying principles of general relativity. Get it wrong, and who knows where you\'ll end up!', zoneId: 'physics', type: 'Individual', difficulty: 'Hard', points: 210 },
     ]
   },
   {
-    id: 'psychology', name: 'Mind Maze: The Empathy Engine Labyrinth',
+    id: 'psychology', name: 'Mind Maze: The Empathy Engine',
     description: 'Navigate intricate social scenarios, understand diverse perspectives, and master the art of emotional intelligence. Can you solve the human puzzle?',
     iconKey: 'BrainCog', subject: 'Psychology',
     image: 'https://placehold.co/1200x400.png',
-    aiHint: 'surreal brain landscape',
+    aiHint: 'mind empathy',
     quests: [
        { id: 'ps_q1', title: 'The Empathy Test', description: 'Experience a day in someone else\'s shoes through an advanced simulation. Make choices that demonstrate understanding and compassion to pass.', zoneId: 'psychology', type: 'Individual', difficulty: 'Medium', points: 140 },
     ]
@@ -219,7 +219,7 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
   }, []);
 
   const t = pageTranslations[lang];
-  const mechanicsDescHtml = t.mechanicsDescription.replace('{zoneName}', zone.name);;
+  const mechanicsDescHtml = t.mechanicsDescription.replace('{zoneName}', zone.name);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0">
@@ -377,3 +377,4 @@ export default function LearningZoneDetailPage({ params }: { params: { zoneId: s
     
 
     
+
