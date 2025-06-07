@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ZoneCard } from '@/components/ZoneCard';
 import { ClassroomCard } from '@/components/ClassroomCard';
 import type { LearningZone, Classroom, Quest } from '@/types';
-import { ArrowRight, BookOpenCheck, Users, Puzzle } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Users, Puzzle, Award, Lightbulb, type LucideIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 // Mock Data - In a real app, this data might also need i18n if names/descriptions change
@@ -27,6 +27,26 @@ const activeQuests: Quest[] = [
   { id: 'q2', title: 'Geometric Guardians', description: 'Protect the realm using geometric principles.', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
 ];
 
+interface Achievement {
+  id: string;
+  titleKey: keyof typeof dashboardTranslations.en;
+  descriptionKey: keyof typeof dashboardTranslations.en;
+  icon: LucideIcon;
+  dateKey: keyof typeof dashboardTranslations.en;
+}
+
+const recentAchievementsData: Achievement[] = [
+  { id: 'ach1', titleKey: 'achievementTeamworkTitanTitle', descriptionKey: 'achievementTeamworkTitanDesc', icon: Users, dateKey: 'date2DaysAgo' },
+  { id: 'ach2', titleKey: 'achievementPuzzleProTitle', descriptionKey: 'achievementPuzzleProDesc', icon: Puzzle, dateKey: 'date5DaysAgo' },
+  { id: 'ach3', titleKey: 'achievementKindnessChampionTitle', descriptionKey: 'achievementKindnessChampionDesc', icon: Award, dateKey: 'date1WeekAgo' },
+];
+
+const thoughtsOfTheDayKeys: (keyof typeof dashboardTranslations.en)[] = [
+  'thought1',
+  'thought2',
+  'thought3',
+];
+
 const dashboardTranslations = {
   en: {
     welcomeTitle: "Welcome to EduQuest!",
@@ -44,6 +64,20 @@ const dashboardTranslations = {
     continueQuestButton: "Continue Quest",
     noQuestsMessage: "No active quests at the moment. Explore a zone to find new adventures!",
     findQuestsButton: "Find Quests",
+    recentAchievementsTitle: "Recent Achievements",
+    thoughtOfTheDayTitle: "Thought of the Day",
+    achievementTeamworkTitanTitle: "Teamwork Titan",
+    achievementTeamworkTitanDesc: "Successfully completed 5 collaborative quests.",
+    achievementPuzzleProTitle: "Puzzle Pro",
+    achievementPuzzleProDesc: "Mastered the 'Geometric Guardians' challenge.",
+    achievementKindnessChampionTitle: "Kindness Champion",
+    achievementKindnessChampionDesc: "Helped a teammate during the 'Silk Road' quest.",
+    date2DaysAgo: "2 days ago",
+    date5DaysAgo: "5 days ago",
+    date1WeekAgo: "1 week ago",
+    thought1: "The beautiful thing about learning is that no one can take it away from you. - B.B. King",
+    thought2: "Collaboration allows us to know more than we are capable of knowing by ourselves. - Paul Solarz",
+    thought3: "Empathy is seeing with the eyes of another, listening with the ears of another, and feeling with the heart of another. - Alfred Adler",
   },
   id: {
     welcomeTitle: "Selamat Datang di EduQuest!",
@@ -61,14 +95,29 @@ const dashboardTranslations = {
     continueQuestButton: "Lanjutkan Misi",
     noQuestsMessage: "Tidak ada misi aktif saat ini. Jelajahi zona untuk menemukan petualangan baru!",
     findQuestsButton: "Cari Misi",
+    recentAchievementsTitle: "Pencapaian Terbaru",
+    thoughtOfTheDayTitle: "Pemikiran Hari Ini",
+    achievementTeamworkTitanTitle: "Raksasa Kerja Sama Tim",
+    achievementTeamworkTitanDesc: "Berhasil menyelesaikan 5 misi kolaboratif.",
+    achievementPuzzleProTitle: "Jago Teka-Teki",
+    achievementPuzzleProDesc: "Menguasai tantangan 'Penjaga Geometris'.",
+    achievementKindnessChampionTitle: "Juara Kebaikan",
+    achievementKindnessChampionDesc: "Membantu rekan satu tim selama misi 'Jalur Sutra'.",
+    date2DaysAgo: "2 hari yang lalu",
+    date5DaysAgo: "5 hari yang lalu",
+    date1WeekAgo: "1 minggu yang lalu",
+    thought1: "Hal terindah tentang belajar adalah tidak ada yang bisa mengambilnya darimu. - B.B. King",
+    thought2: "Kolaborasi memungkinkan kita mengetahui lebih banyak daripada yang mampu kita ketahui sendiri. - Paul Solarz",
+    thought3: "Empati adalah melihat dengan mata orang lain, mendengar dengan telinga orang lain, dan merasakan dengan hati orang lain. - Alfred Adler",
   }
 };
 
 export default function DashboardPage() {
   const [lang, setLang] = useState<'en' | 'id'>('en');
+  const [currentThoughtKey, setCurrentThoughtKey] = useState<keyof typeof dashboardTranslations.en>(thoughtsOfTheDayKeys[0]);
 
   useEffect(() => {
-    const updateLang = () => {
+    const updateLangAndThought = () => {
       const savedSettings = localStorage.getItem('user-app-settings');
       let newLang: 'en' | 'id' = 'en';
       if (savedSettings) {
@@ -80,13 +129,17 @@ export default function DashboardPage() {
         } catch (e) { console.error("Error reading lang for Dashboard", e); }
       }
       setLang(newLang);
+      
+      // Select a random thought on initial load or language change
+      const randomIndex = Math.floor(Math.random() * thoughtsOfTheDayKeys.length);
+      setCurrentThoughtKey(thoughtsOfTheDayKeys[randomIndex]);
     };
 
-    updateLang();
+    updateLangAndThought();
 
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'user-app-settings') {
-        updateLang();
+        updateLangAndThought();
       }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -94,6 +147,7 @@ export default function DashboardPage() {
   }, []);
 
   const t = dashboardTranslations[lang];
+  const currentThought = t[currentThoughtKey] || t.thought1; // Fallback to first thought
 
   return (
     <div className="container mx-auto pt-0 pb-8 px-4 md:px-0">
@@ -116,18 +170,56 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <section className="mb-12">
-        <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
-          <BookOpenCheck className="mr-3 h-7 w-7 text-accent" />
-          {t.featuredZonesTitle}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {learningZones.map((zone) => (
-            <ZoneCard key={zone.id} zone={zone} />
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <section className="lg:col-span-2">
+          <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
+            <BookOpenCheck className="mr-3 h-7 w-7 text-accent" />
+            {t.featuredZonesTitle}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {learningZones.map((zone) => (
+              <ZoneCard key={zone.id} zone={zone} />
+            ))}
+          </div>
+        </section>
+        <div className="space-y-8">
+            <section>
+                <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
+                  <Award className="mr-3 h-7 w-7 text-accent" />
+                  {t.recentAchievementsTitle}
+                </h2>
+                <div className="space-y-4">
+                  {recentAchievementsData.map((achievement) => {
+                    const AchievementIcon = achievement.icon;
+                    return (
+                      <Card key={achievement.id} className="shadow-md hover:shadow-lg transition-shadow">
+                        <CardContent className="pt-4 flex items-start gap-3">
+                          <AchievementIcon className="h-8 w-8 text-yellow-500 mt-1 shrink-0" />
+                          <div>
+                            <h3 className="font-semibold text-foreground">{t[achievement.titleKey]}</h3>
+                            <p className="text-sm text-muted-foreground">{t[achievement.descriptionKey]}</p>
+                            <p className="text-xs text-muted-foreground/80 mt-1">{t[achievement.dateKey]}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+            </section>
+            <section>
+                <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
+                    <Lightbulb className="mr-3 h-7 w-7 text-accent" />
+                    {t.thoughtOfTheDayTitle}
+                </h2>
+                <Card className="shadow-md bg-secondary/30">
+                    <CardContent className="pt-6">
+                        <p className="text-lg italic text-secondary-foreground text-center">"{currentThought}"</p>
+                    </CardContent>
+                </Card>
+            </section>
         </div>
-      </section>
-
+      </div>
+      
       <section className="mb-12">
         <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
           <Users className="mr-3 h-7 w-7 text-accent" />
