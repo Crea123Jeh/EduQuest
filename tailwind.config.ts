@@ -11,9 +11,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Baloo 2"', 'sans-serif'],
-        body: ['"Baloo 2"', 'sans-serif'],
-        headline: ['"Baloo 2"', 'sans-serif'],
+        sans: ['Tangerine', 'cursive', 'sans-serif'],
+        body: ['Tangerine', 'cursive', 'sans-serif'],
+        headline: ['Tangerine', 'cursive', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
