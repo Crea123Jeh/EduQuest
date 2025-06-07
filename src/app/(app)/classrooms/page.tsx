@@ -21,7 +21,7 @@ const initialMyClassrooms: Classroom[] = [
     studentCount: 25, 
     difficulty: 'Medium', 
     active: true,
-    description: 'An exciting journey through various subjects.', // Basic description for listing
+    description: 'An exciting journey through various subjects.',
     bannerImage: 'https://placehold.co/1200x300.png',
     aiBannerHint: 'fantasy classroom adventure',
   },
@@ -37,12 +37,66 @@ const initialMyClassrooms: Classroom[] = [
     bannerImage: 'https://placehold.co/1200x300.png',
     aiBannerHint: 'coding computer science club',
   },
+  {
+    id: 'c6',
+    name: 'Art History Explorers',
+    teacher: 'Ms. Kahlo',
+    subject: 'Art History',
+    studentCount: 18,
+    difficulty: 'Easy',
+    active: true,
+    description: 'Discover the stories behind great works of art.',
+    bannerImage: 'https://placehold.co/1200x300.png',
+    aiBannerHint: 'art history museum',
+  },
+  {
+    id: 'c7',
+    name: 'Debate & Discourse',
+    teacher: 'Mr. Socrates',
+    subject: 'Philosophy',
+    studentCount: 20,
+    difficulty: 'Hard',
+    active: true,
+    description: 'Sharpen your arguments and explore complex ideas.',
+    bannerImage: 'https://placehold.co/1200x300.png',
+    aiBannerHint: 'debate discussion stage',
+  }
 ];
 
 const availableClassrooms: Classroom[] = [
   { id: 'c2', name: 'History Buffs Unite', teacher: 'Mr. Herodotus', subject: 'History', studentCount: 18, difficulty: 'Hard', active: false, description: 'Explore historical events.' },
   { id: 'c4', name: 'Physics Explorers', teacher: 'Dr. Curie', subject: 'Science', studentCount: 22, difficulty: 'Medium', active: true, description: 'Discover the wonders of physics.' },
   { id: 'c5', name: 'Mathletes Challenge', teacher: 'Prof. Euler', subject: 'Mathematics', studentCount: 30, difficulty: 'Hard', active: true, description: 'Solve challenging math problems.' },
+  { 
+    id: 'c8', 
+    name: 'Eco Warriors', 
+    teacher: 'Dr. Goodall', 
+    subject: 'Environmental Sci.', 
+    studentCount: 24, 
+    difficulty: 'Medium', 
+    active: true, 
+    description: 'Learn about ecology and conservation efforts.' 
+  },
+  { 
+    id: 'c9', 
+    name: 'Poetry Corner', 
+    teacher: 'Ms. Angelou', 
+    subject: 'Literature', 
+    studentCount: 12, 
+    difficulty: 'Easy', 
+    active: true, 
+    description: 'Express yourself through the art of poetry.' 
+  },
+  { 
+    id: 'c10', 
+    name: 'Future Astronauts', 
+    teacher: 'Cmdr. Hadfield', 
+    subject: 'Astronomy', 
+    studentCount: 28, 
+    difficulty: 'Medium', 
+    active: false, 
+    description: 'Explore the cosmos and learn about space travel.' 
+  },
 ];
 
 const mockGoogleClassrooms: Classroom[] = [
