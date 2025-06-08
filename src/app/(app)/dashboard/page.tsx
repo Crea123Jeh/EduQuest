@@ -12,19 +12,20 @@ import { useState, useEffect } from 'react';
 
 // Mock Data - In a real app, this data might also need i18n if names/descriptions change
 const learningZones: LearningZone[] = [
-  { id: 'history', name: 'History Zone', description: 'Explore ancient civilizations and pivotal historical events.', iconKey: 'History', subject: 'History', image: 'https://placehold.co/400x250.png', aiHint: 'history ancient' },
-  { id: 'math', name: 'Mathematics Realm', description: 'Solve intriguing puzzles and master mathematical concepts.', iconKey: 'Calculator', subject: 'Mathematics', image: 'https://placehold.co/400x250.png', aiHint: 'math abstract' },
-  { id: 'science', name: 'Science Lab', description: 'Conduct experiments and discover the wonders of science.', iconKey: 'FlaskConical', subject: 'Science', image: 'https://placehold.co/400x250.png', aiHint: 'science laboratory' },
+  { id: 'history', name: 'History Zone: Time Travelers\' Guild', description: 'Navigate pivotal moments, from decoding ancient scrolls in Egypt to strategizing D-Day landings. Your choices shape the past!', iconKey: 'History', subject: 'History', image: 'https://placehold.co/400x250.png', aiHint: 'history travel' },
+  { id: 'math', name: 'Mathematics Realm: Number Ninjas\' Citadel', description: 'Master calculation and logic in a high-tech dojo. Solve numerical puzzles, duel equation-robots, and become a Number Ninja!', iconKey: 'Calculator', subject: 'Mathematics', image: 'https://placehold.co/400x250.png', aiHint: 'math dojo' },
+  { id: 'science', name: 'Science Lab: The Mad Scientist\'s Playground', description: 'Concoct potions, build contraptions, and reanimate creatures in this quirky lab. Expect the unexpected – it’s all a discovery!', iconKey: 'FlaskConical', subject: 'Science', image: 'https://placehold.co/400x250.png', aiHint: 'science lab' },
 ];
 
 const classrooms: Classroom[] = [
   { id: 'c1', name: 'Grade 5 Adventure', teacher: 'Ms. Lovelace', subject: 'Interdisciplinary', studentCount: 25, difficulty: 'Medium', active: true },
-  { id: 'c2', name: 'History Buffs Unite', teacher: 'Mr. Herodotus', subject: 'History', studentCount: 18, difficulty: 'Hard', active: false },
+  { id: 'c3', name: 'Creative Coders Club', teacher: 'Mr. Turing', subject: 'Computer Science', studentCount: 15, difficulty: 'Medium', active: true },
 ];
 
 const activeQuests: Quest[] = [
-  { id: 'q1', title: 'The Borobudur Chronicle', description: 'Uncover the secrets of the Borobudur temple.', zoneId: 'history', type: 'Collaborative', difficulty: 'Medium', points: 150 },
-  { id: 'q2', title: 'Geometric Guardians', description: 'Protect the realm using geometric principles.', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
+  { id: 'h_q1', title: 'The Pharaoh\'s Lost Scepter', description: 'Navigate booby-trapped pyramids and decipher hieroglyphs to find the legendary scepter.', zoneId: 'history', type: 'Individual', difficulty: 'Medium', points: 120 },
+  { id: 'm_q1', title: 'Fractal Fortress Defense', description: 'Configure and deploy a fractal shield to protect the Citadel from incoming data corruption.', zoneId: 'math', type: 'Individual', difficulty: 'Hard', points: 200 },
+  { id: 's_q2', title: 'Eco-Challenge: Operation Biosphere Rescue', description: 'A miniature ecosystem is collapsing! Identify pollutants and restore balance.', zoneId: 'science', type: 'Collaborative', difficulty: 'Hard', points: 190 },
 ];
 
 interface Achievement {
@@ -66,6 +67,7 @@ const dashboardTranslations = {
     findQuestsButton: "Find Quests",
     recentAchievementsTitle: "Recent Achievements",
     thoughtOfTheDayTitle: "Thought of the Day",
+    exploreAllZonesButton: "Explore All Zones",
     achievementTeamworkTitanTitle: "Teamwork Titan",
     achievementTeamworkTitanDesc: "Successfully completed 5 collaborative quests.",
     achievementPuzzleProTitle: "Puzzle Pro",
@@ -97,6 +99,7 @@ const dashboardTranslations = {
     findQuestsButton: "Cari Misi",
     recentAchievementsTitle: "Pencapaian Terbaru",
     thoughtOfTheDayTitle: "Pemikiran Hari Ini",
+    exploreAllZonesButton: "Jelajahi Semua Zona",
     achievementTeamworkTitanTitle: "Raksasa Kerja Sama Tim",
     achievementTeamworkTitanDesc: "Berhasil menyelesaikan 5 misi kolaboratif.",
     achievementPuzzleProTitle: "Jago Teka-Teki",
@@ -130,7 +133,6 @@ export default function DashboardPage() {
       }
       setLang(newLang);
       
-      // Select a random thought on initial load or language change
       const randomIndex = Math.floor(Math.random() * thoughtsOfTheDayKeys.length);
       setCurrentThoughtKey(thoughtsOfTheDayKeys[randomIndex]);
     };
@@ -147,7 +149,7 @@ export default function DashboardPage() {
   }, []);
 
   const t = dashboardTranslations[lang];
-  const currentThought = t[currentThoughtKey] || t.thought1; // Fallback to first thought
+  const currentThought = t[currentThoughtKey] || t.thought1; 
 
   return (
     <div className="container mx-auto pt-0 pb-8 px-4 md:px-0">
@@ -170,19 +172,84 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        <section className="lg:col-span-2">
-          <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
-            <BookOpenCheck className="mr-3 h-7 w-7 text-accent" />
-            {t.featuredZonesTitle}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {learningZones.map((zone) => (
-              <ZoneCard key={zone.id} zone={zone} />
+      <section className="mb-12">
+        <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
+          <Puzzle className="mr-3 h-7 w-7 text-accent" />
+          {t.activeQuestsTitle}
+        </h2>
+        {activeQuests.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {activeQuests.map(quest => (
+              <Card key={quest.id} className="hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-1 flex flex-col h-full">
+                <CardHeader>
+                  <CardTitle className="text-lg">{quest.title}</CardTitle>
+                  <CardDescription className="h-12 line-clamp-2">{quest.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow text-sm text-muted-foreground space-y-1">
+                  <p>{t.questZoneLabel}: {learningZones.find(z => z.id === quest.zoneId)?.name || 'N/A'}</p>
+                  <p>{t.questDifficultyLabel}: {quest.difficulty}</p>
+                  <p>{t.questPointsLabel}: {quest.points}</p>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="link" asChild className="p-0 h-auto text-accent w-full justify-start">
+                    <Link href={`/learning-zones/${quest.zoneId}/quests/${quest.id}`}>{t.continueQuestButton} <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                  </Button>
+                </CardFooter>
+              </Card>
             ))}
           </div>
+        ) : (
+           <Card className="text-center py-8">
+            <CardContent>
+              <Puzzle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-4">{t.noQuestsMessage}</p>
+              <Button asChild variant="outline">
+                <Link href="/learning-zones">{t.findQuestsButton}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </section>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <section className="lg:col-span-2 space-y-12">
+          <div>
+            <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
+              <BookOpenCheck className="mr-3 h-7 w-7 text-accent" />
+              {t.featuredZonesTitle}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {learningZones.slice(0,2).map((zone) => ( // Show only 2 featured zones
+                <ZoneCard key={zone.id} zone={zone} />
+              ))}
+            </div>
+          </div>
+           <div>
+            <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
+              <Users className="mr-3 h-7 w-7 text-accent" />
+              {t.yourClassroomsTitle}
+            </h2>
+            {classrooms.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {classrooms.slice(0,2).map((classroom) => ( // Show 2 featured classrooms
+                  <ClassroomCard key={classroom.id} classroom={classroom} />
+                ))}
+              </div>
+            ) : (
+              <Card className="text-center py-8">
+                <CardContent>
+                  <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4">{t.noClassroomsMessage}</p>
+                  <Button asChild variant="outline">
+                    <Link href="/classrooms/join">{t.joinClassroomButton}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </section>
-        <div className="space-y-8">
+
+        <div className="lg:col-span-1 space-y-8">
             <section>
                 <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
                   <Award className="mr-3 h-7 w-7 text-accent" />
@@ -219,68 +286,6 @@ export default function DashboardPage() {
             </section>
         </div>
       </div>
-      
-      <section className="mb-12">
-        <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
-          <Users className="mr-3 h-7 w-7 text-accent" />
-          {t.yourClassroomsTitle}
-        </h2>
-        {classrooms.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {classrooms.map((classroom) => (
-              <ClassroomCard key={classroom.id} classroom={classroom} />
-            ))}
-          </div>
-        ) : (
-          <Card className="text-center py-8">
-            <CardContent>
-              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">{t.noClassroomsMessage}</p>
-              <Button asChild variant="outline">
-                <Link href="/classrooms/join">{t.joinClassroomButton}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </section>
-      
-      <section>
-        <h2 className="font-headline text-2xl font-semibold mb-6 text-foreground flex items-center">
-          <Puzzle className="mr-3 h-7 w-7 text-accent" />
-          {t.activeQuestsTitle}
-        </h2>
-        {activeQuests.length > 0 ? (
-          <div className="space-y-4">
-            {activeQuests.map(quest => (
-              <Card key={quest.id} className="hover:shadow-md transition-all duration-300 ease-in-out hover:-translate-y-1">
-                <CardHeader>
-                  <CardTitle className="text-lg">{quest.title}</CardTitle>
-                  <CardDescription>{quest.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  <p>{t.questZoneLabel}: {learningZones.find(z => z.id === quest.zoneId)?.name || 'N/A'}</p>
-                  <p>{t.questDifficultyLabel}: {quest.difficulty} | {t.questPointsLabel}: {quest.points}</p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="link" asChild className="p-0 h-auto text-accent">
-                    <Link href={`/learning-zones/${quest.zoneId}/quests/${quest.id}`}>{t.continueQuestButton} <ArrowRight className="ml-1 h-4 w-4" /></Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        ) : (
-           <Card className="text-center py-8">
-            <CardContent>
-              <Puzzle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">{t.noQuestsMessage}</p>
-              <Button asChild variant="outline">
-                <Link href="/learning-zones">{t.findQuestsButton}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </section>
     </div>
   );
 }

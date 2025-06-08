@@ -57,7 +57,7 @@ export interface Quest {
   type: 'Collaborative' | 'Individual' | 'Ethical Dilemma';
   difficulty: 'Easy' | 'Medium' | 'Hard';
   points: number;
-  isCompleted?: boolean;
+  isCompleted?: boolean; // Optional: track completion status
 }
 
 export interface UserProfile {
@@ -70,3 +70,4 @@ export interface UserProfile {
   completedQuests?: string[];
   // Add more profile related fields as needed
 }
+
