@@ -212,7 +212,7 @@ export default function BorobudurExplorersMapPage() {
         toast({ title: t.feedbackCorrect, variant: "default" });
         setScore(prev => prev + 10); // Add points for correct answer
       } else {
-        toast({ title: t.feedbackIncorrect({ answer: correctAnswer }), variant: "destructive" });
+        toast({ title: t.feedbackIncorrect.replace('{answer}', correctAnswer), variant: "destructive" });
       }
     }
     // For 'info' type, just closing is enough. Points could be awarded on visit.
